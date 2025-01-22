@@ -61,7 +61,7 @@ project-name/
 ## Contributors
 - Hi my name is Hari, im excited to work with you guys
 - Hi my name is Jerry, I'm excited!
-- Hi my name is Cameron, I'm excited yay!
+- Hi my name is Cameron, I'm excited yay! I love going to the gym.
 - Ji my name is Ario.
 - adding a lot of change to get error
 
