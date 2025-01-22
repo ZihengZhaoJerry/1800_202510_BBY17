@@ -61,6 +61,7 @@ project-name/
 ## Contributors
 - Hi my name is Hari, im excited to work with you guys
 - Hi my name is Jerry, I'm excited!
+- Hi my name is Cameron, I'm excited yay!
 
 - **Your Name** - BCIT CST Student with a passion for creating user-friendly applications. Fun fact: Loves solving Rubik's Cubes in under a minute.
 - **Teammate Name** - BCIT CST Student, Frontend enthusiast with a knack for creative design. Fun fact: Has a collection of over 50 houseplants.
