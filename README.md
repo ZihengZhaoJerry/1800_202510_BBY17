@@ -61,8 +61,8 @@ project-name/
 ## Contributors
 - Hi my name is Hari, im excited to work with you guys
 - Hi my name is Jerry, I'm excited!
-- Hi my name is Cameron, I'm excited yay!
-- Ji my name is Ario.
+- Hi my name is Cameron, I'm excited yay! I love going to the gym.
+- Ji my name is Ario. hey .
 - adding a lot of change to get error
 
 - **Your Name** - BCIT CST Student with a passion for creating user-friendly applications. Fun fact: Loves solving Rubik's Cubes in under a minute.
