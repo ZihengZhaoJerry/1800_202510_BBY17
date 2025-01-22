@@ -58,8 +58,9 @@ project-name/
 ---
 
 ## Contributors
-- **Cameron Morris** - BCIT CST Student with a passion for learning
-- **Teammate Name** - BCIT CST Student, Frontend enthusiast with a knack for creative design. Fun fact: Has a collection of over 50 houseplants.
+## Contributors
+- Hi my name is Hari, im excited to work with you guys
+- Cameron Morris - BCIT CST Student with a passion for learning
 
 ---
 
