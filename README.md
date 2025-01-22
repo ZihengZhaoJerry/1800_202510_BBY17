@@ -61,7 +61,7 @@ project-name/
 ## Contributors
 - Hi my name is Hari, im excited to work with you guys
 - Cameron Morris - BCIT CST Student with a passion for learning
-- HI this is Jerry
+- HI this is Jerry. Adding a new line.
 
 ---
 
