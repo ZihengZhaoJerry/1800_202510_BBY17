@@ -17,100 +17,94 @@
     <!-- Link to styles of your own -->
     <link rel="stylesheet" href="./styles/style.css">
     <style>
-      body {
-          font-family: Arial, sans-serif;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          height: 100vh;
-          background-color: #f4f4f4;
-      }
-      .container {
-          background: white;
-          padding: 20px;
-          border-radius: 8px;
-          box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-          width: 300px;
-      }
-      h2 {
-          margin-bottom: 10px;
-      }
-      input {
-          width: 100%;
-          padding: 8px;
-          margin: 5px 0;
-          border: 1px solid #ccc;
-          border-radius: 4px;
-      }
-      .btn {
-          width: 100%;
-          padding: 10px;
-          background-color: #007BFF;
-          color: white;
-          border: none;
-          border-radius: 4px;
-          cursor: pointer;
-      }
-      .btn:hover {
-          background-color: #0056b3;
-      }
-  </style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            margin-top: 20px;
+        }
+        h2 {
+            margin-bottom: 10px;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .btn {
+            width: 100%;
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .navbar {
+            width: 100%;
+            text-align: center;
+        }
+        .text-center {
+            width: 100%;
+            padding: 20px;
+        }
+    </style>
 </head>
 
 <body>
+    <nav class="navbar bg-info py-4">
+        <div class="text-center">
+            <a class="navbar-brand font-weight-bold text-white" href="#" style="font-size: 3rem;">Huh !?</a>
+            <p class="text-white font-italic mb-0">Turn your Huh? into Aha!</p>
+        </div>
+    </nav>
 
-  <nav class="navbar bg-info d-flex flex-column py-4">
-    <div class="text-center">
-      <a class="navbar-brand font-weight-bold text-white" href="#" style="font-size: 3rem;">Huh !?</a>
-      <p class="text-white font-italic mb-0">Turn your Huh? into Aha!</p>
-    </div>
-  </nav>
-
-  <div>
-
-  </div>
-  
-    
-
-
-<!--Body stuff-->
-    <figure class="text-center">
-      <blockquote class="blockquote">
-        <h4 style="font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif">Our app can help you find the meaning of your local slang!</h4>
-      </blockquote>
-      <figcaption class="blockquote-footer">
-      </figcaption>
+    <figure class="text-center mt-3">
+        <blockquote class="blockquote">
+            <h4 style="font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif">Our app can help you find the meaning of your local slang!</h4>
+        </blockquote>
     </figure>
+
     <div class="container">
-      <h2>Sign In</h2>
-      <form action="#" method="POST">
-          <label for="signin-email">Email:</label>
-          <input type="email" id="signin-email" name="signin-email" required>
-          
-          <label for="signin-password">PW:</label>
-          <input type="password" id="signin-password" name="signin-password" required>
-          
-          <button type="submit" class="btn">Enter</button>
-      </form>
-      
-      <h2>Sign Up</h2>
-      <form action="#" method="POST">
-          <label for="signup-email">Email:</label>
-          <input type="email" id="signup-email" name="signup-email" required>
-          
-          <label for="signup-password">PW:</label>
-          <input type="password" id="signup-password" name="signup-password" required>
-          
-          <button type="submit" class="btn">Enter</button>
-      </form>
-  </div>
-    <!---------------------------------------------->
-    <!-- Your own JavaScript functions go here    -->
-    <!---------------------------------------------->
+        <h2>Sign In</h2>
+        <form action="#" method="POST">
+            <label for="signin-email">Email:</label>
+            <input type="email" id="signin-email" name="signin-email" required>
+            
+            <label for="signin-password">PW:</label>
+            <input type="password" id="signin-password" name="signin-password" required>
+            
+            <button type="submit" class="btn">Enter</button>
+        </form>
+    </div>
 
-    <!-- Link to scripts of your own -->
-    <!-- <script src="./scripts/script.js"></script> -->
-
+    <div class="container">
+        <h2>Sign Up</h2>
+        <form action="#" method="POST">
+            <label for="signup-email">Email:</label>
+            <input type="email" id="signup-email" name="signup-email" required>
+            
+            <label for="signup-password">PW:</label>
+            <input type="password" id="signup-password" name="signup-password" required>
+            
+            <button type="submit" class="btn">Enter</button>
+        </form>
+    </div>
 </body>
-
 </html>
