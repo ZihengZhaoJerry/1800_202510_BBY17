@@ -16,7 +16,45 @@
 
     <!-- Link to styles of your own -->
     <link rel="stylesheet" href="./styles/style.css">
-
+    <style>
+      body {
+          font-family: Arial, sans-serif;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 100vh;
+          background-color: #f4f4f4;
+      }
+      .container {
+          background: white;
+          padding: 20px;
+          border-radius: 8px;
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+          width: 300px;
+      }
+      h2 {
+          margin-bottom: 10px;
+      }
+      input {
+          width: 100%;
+          padding: 8px;
+          margin: 5px 0;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+      }
+      .btn {
+          width: 100%;
+          padding: 10px;
+          background-color: #007BFF;
+          color: white;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+      }
+      .btn:hover {
+          background-color: #0056b3;
+      }
+  </style>
 </head>
 
 <body>
@@ -43,7 +81,29 @@
       <figcaption class="blockquote-footer">
       </figcaption>
     </figure>
-
+    <div class="container">
+      <h2>Sign In</h2>
+      <form action="#" method="POST">
+          <label for="signin-email">Email:</label>
+          <input type="email" id="signin-email" name="signin-email" required>
+          
+          <label for="signin-password">PW:</label>
+          <input type="password" id="signin-password" name="signin-password" required>
+          
+          <button type="submit" class="btn">Enter</button>
+      </form>
+      
+      <h2>Sign Up</h2>
+      <form action="#" method="POST">
+          <label for="signup-email">Email:</label>
+          <input type="email" id="signup-email" name="signup-email" required>
+          
+          <label for="signup-password">PW:</label>
+          <input type="password" id="signup-password" name="signup-password" required>
+          
+          <button type="submit" class="btn">Enter</button>
+      </form>
+  </div>
     <!---------------------------------------------->
     <!-- Your own JavaScript functions go here    -->
     <!---------------------------------------------->
