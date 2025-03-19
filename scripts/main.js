@@ -51,21 +51,18 @@ function readQuote(day) {
         content: "Post1 content", 
         author: "Jerry",
        date: firebase.firestore.FieldValue.serverTimestamp(),
-        postId: 123  
     });
     postsRef.add({
         title: "Post2",
         content: "Post2 content", 
         author: "Jerry",
        date: firebase.firestore.FieldValue.serverTimestamp(),
-        postId: 1234  
     });
     postsRef.add({
         title: "Post3",
         content: "Post3 content", 
         author: "Jerry",
        date: firebase.firestore.FieldValue.serverTimestamp(),
-        postId: 12345  
     });
 }
 //------------------------------------------------------------------------------
