@@ -47,118 +47,60 @@ function readQuote(day) {
     var postsRef = db.collection("posts");
 
     postsRef.add({
-        title: "Hello",
-        details: "How are you", //replace with your own city?
-        owner: "abcdefg",
-        comments: "Yes",
-        last_updated: firebase.firestore.FieldValue.serverTimestamp()  //current system time
+        title: "Post1",
+        content: "Post1 content", 
+        author: "Jerry",
+       date: firebase.firestore.FieldValue.serverTimestamp(),
+        postId: 123  
     });
-}
-
-function writeHikes() {
-  //define a variable for the collection you want to create in Firestore to populate data
-  var hikesRef = db.collection("hikes");
-
-  hikesRef.add({
-      code: "BBY01",
-      name: "Burnaby Lake Park Trail", //replace with your own city?
-      city: "Burnaby",
-      province: "BC",
-      level: "easy",
-      details: "A lovely place for lunch walk",
-      length: 10,          //number value
-      hike_time: 60,       //number value
-      lat: 49.2467097082573,
-      lng: -122.9187029619698,
-      last_updated: firebase.firestore.FieldValue.serverTimestamp()  //current system time
-  });
-  hikesRef.add({
-      code: "AM01",
-      name: "Buntzen Lake Trail", //replace with your own city?
-      city: "Anmore",
-      province: "BC",
-      level: "moderate",
-      details: "Close to town, and relaxing",
-      length: 10.5,      //number value
-      hike_time: 80,     //number value
-      lat: 49.3399431028579,
-      lng: -122.85908496766939,
-      last_updated: firebase.firestore.Timestamp.fromDate(new Date("March 10, 2022"))
-  });
-  hikesRef.add({
-      code: "NV01",
-      name: "Mount Seymour Trail", //replace with your own city?
-      city: "North Vancouver",
-      province: "BC",
-      level: "hard",
-      details:  "Amazing ski slope views",
-      length: 8.2,        //number value
-      hike_time: 120,     //number value
-      lat: 49.38847101455571,
-      lng: -122.94092543551031,
-      last_updated: firebase.firestore.Timestamp.fromDate(new Date("January 1, 2023"))
-  });
+    postsRef.add({
+        title: "Post2",
+        content: "Post2 content", 
+        author: "Jerry",
+       date: firebase.firestore.FieldValue.serverTimestamp(),
+        postId: 1234  
+    });
+    postsRef.add({
+        title: "Post3",
+        content: "Post3 content", 
+        author: "Jerry",
+       date: firebase.firestore.FieldValue.serverTimestamp(),
+        postId: 12345  
+    });
 }
 //------------------------------------------------------------------------------
 // Input parameter is a string representing the collection we are reading from
 //------------------------------------------------------------------------------
-function displayCardsDynamically(collection) {
-    let cardTemplate = document.getElementById("hikeCardTemplate"); // Retrieve the HTML element with the ID "hikeCardTemplate" and store it in the cardTemplate variable. 
+function displayPostsDynamically() {
+    let cardTemplate = document.getElementById("postCardTemplate"); // Reference post card template
 
-    db.collection(collection).get()   //the collection called "hikes"
-        .then(allHikes=> {
-            //var i = 1;  //Optional: if you want to have a unique ID for each hike
-            allHikes.forEach(doc => { //iterate thru each doc
-                var title = doc.data().name;       // get value of the "name" key
-                var details = doc.data().details;  // get value of the "details" key
-								var hikeCode = doc.data().code;    //get unique ID to each hike to be used for fetching right image
-                var hikeLength = doc.data().length; //gets the length field
+    db.collection("posts").orderBy("date", "desc").get()  // Fetch posts ordered by date (newest first)
+        .then(allPosts => {
+            document.getElementById("posts-go-here").innerHTML = ""; // Clear previous content
+
+            allPosts.forEach(doc => {
+                var postTitle = doc.data().title;
+                var postContent = doc.data().content;
+                var postAuthor = doc.data().author;
+                var postDate = doc.data().date ? doc.data().date.toDate().toLocaleString() : "No Date";
                 var docID = doc.id;
-                let newcard = cardTemplate.content.cloneNode(true); // Clone the HTML template to create a new card (newcard) that will be filled with Firestore data.
 
-                //update title and text and image
-                newcard.querySelector('.card-title').innerHTML = title;
-                newcard.querySelector('.card-length').innerHTML = hikeLength +"km";
-                newcard.querySelector('.card-text').innerHTML = details;
-                newcard.querySelector('.card-image').src = `./images/${hikeCode}.jpg`; //Example: NV01.jpg
-                newcard.querySelector('a').href = "eachHike.html?docID="+docID;
+                let newCard = cardTemplate.content.cloneNode(true); // Clone template
 
-                //Optional: give unique ids to all elements for future use
-                // newcard.querySelector('.card-title').setAttribute("id", "ctitle" + i);
-                // newcard.querySelector('.card-text').setAttribute("id", "ctext" + i);
-                // newcard.querySelector('.card-image').setAttribute("id", "cimage" + i);
-
-                //attach to gallery, Example: "hikes-go-here"
-                document.getElementById(collection + "-go-here").appendChild(newcard);
-
-                //i++;   //Optional: iterate variable to serve as unique ID
-            })
+                // Update elements in the cloned template
+                newCard.querySelector('.card-title').innerHTML = postTitle;
+                newCard.querySelector('.card-text').innerHTML = postContent;
+                newCard.querySelector('.card-author').innerHTML = `By: ${postAuthor}`;
+                newCard.querySelector('.card-date').innerHTML = `Posted on: ${postDate}`;
+                
+                // Append the new card to the display section
+                document.getElementById("posts-go-here").appendChild(newCard);
+            });
         })
+        .catch(error => {
+            console.error("Error fetching posts: ", error);
+        });
 }
 
-displayCardsDynamically("hikes");  //input param is the name of the collection
-
-
-
-
-const public_postsRef = db.collection('public_posts');
-
-public_postsRef.get()
-.then((querySnapshot) => {
-    querySnapshot.forEach((doc) => {
-        const public_postsData = doc.data();
-
-        displayCardsDynamically(public_postsData);
-    });
-})
-
-.catch((error) => {
-    console.error("Error pulling docs: ", error)
-});
-
-function displayItem(public_postsData){
-    const ul = document.getElementById('public_posts');
-    const li = document.createElement('li');
-    li.textContent = public_postsData.Slang;
-    ul.appendChild(li);
-}
+// Ensure Firebase is initialized before calling this function
+displayPostsDynamically();
