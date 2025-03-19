@@ -137,3 +137,28 @@ function displayCardsDynamically(collection) {
 }
 
 displayCardsDynamically("hikes");  //input param is the name of the collection
+
+
+
+
+const public_postsRef = db.collection('public_posts');
+
+public_postsRef.get()
+.then((querySnapshot) => {
+    querySnapshot.forEach((doc) => {
+        const public_postsData = doc.data();
+
+        displayCardsDynamically(public_postsData);
+    });
+})
+
+.catch((error) => {
+    console.error("Error pulling docs: ", error)
+});
+
+function displayItem(public_postsData){
+    const ul = document.getElementById('public_posts');
+    const li = document.createElement('li');
+    li.textContent = public_postsData.Slang;
+    ul.appendChild(li);
+}
