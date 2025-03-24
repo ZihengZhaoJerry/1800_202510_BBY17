@@ -1,39 +1,79 @@
-function displayPosts() {
-  const postsContainer = document.getElementById("postsContainer");
-  
-  // Get all posts from Firestore
-  db.collection("posts").get().then((querySnapshot) => {
-      querySnapshot.forEach((doc) => {
-          // Get post data from document
-          const postData = doc.data();
-          const postTitle = postData.title;
+// Display notifications sorted by comment timestamp (newest first)
+async function displayNotifications() {
+  const notificationsContainer = document.getElementById("postsContainer");
+  notificationsContainer.innerHTML = "";
 
-          // Currently this is the author of the post but it needs to be the author 
-          // of the comment on the post. Still working on this.
-          const postComment = postData.author;
+  const user = firebase.auth().currentUser;
+  if (!user) return;
 
-          // Create HTML elements
-          const card = document.createElement("div");
-          card.className = "card w-85 mb-2";
-          card.innerHTML = `
-              <div class="card-body">
-                  <h5 class="card-title">${postTitle}</h5>
-                  <p>${postComment} has commmented on your post</p>
-                  <button type="button">View Comment</button>
-              </div>
-          `;
-          
-          postsContainer.appendChild(card);
-      });
-  }).catch((error) => {
-      console.error("Error getting posts: ", error);
-      alert("Error loading posts. Check console.");
+  // 1. Get user's posts
+  const postsSnapshot = await db.collection("posts")
+    .where("owner", "==", user.uid)
+    .get();
+
+  // 2. Collect all unread comments with timestamps
+  const unreadComments = [];
+  for (const postDoc of postsSnapshot.docs) {
+    const postData = postDoc.data();
+    if (!postData.comments) continue;
+
+    for (const commentId of postData.comments) {
+      const commentDoc = await db.collection("comments").doc(commentId).get();
+      const commentData = commentDoc.data();
+
+      if (commentData.read === false) {
+        const commenterDoc = await db.collection("users").doc(commentData.owner).get();
+        unreadComments.push({
+          postTitle: postData.details,
+          commenterName: commenterDoc.data().name,
+          commentId: commentId,
+          timestamp: commentData.timestamp // Ensure this field exists
+        });
+      }
+    }
+  }
+
+  // 3. Sort by most recent comment
+  unreadComments.sort((a, b) => b.timestamp - a.timestamp);
+
+  // 4. Display sorted notifications
+  unreadComments.forEach(comment => {
+    const card = document.createElement("div");
+    card.className = "notification-card";
+    card.innerHTML = `
+      <div class="notification-content">
+        <h5>New comment on: ${comment.postTitle}</h5>
+        <p>By: ${comment.commenterName}</p>
+        <button class="mark-read-btn" data-comment-id="${comment.commentId}">
+          Mark as Read
+        </button>
+        <button class="view-post-btn">View Post</button>
+      </div>
+    `;
+    notificationsContainer.appendChild(card);
   });
+
+  // 5. Add click handlers
+  document.querySelectorAll(".mark-read-btn").forEach(button => {
+    button.addEventListener("click", async (e) => {
+      const commentId = e.target.dataset.commentId;
+      await db.collection("comments").doc(commentId).update({ read: true });
+      e.target.closest(".notification-card").remove();
+    });
+  });
+
+  // 6. Add "Mark All as Read" button (new!)
+  const markAllButton = document.createElement("button");
+  markAllButton.textContent = "Mark All as Read";
+  markAllButton.className = "mark-all-read-btn";
+  markAllButton.addEventListener("click", async () => {
+    const batch = db.batch();
+    unreadComments.forEach(comment => {
+      const commentRef = db.collection("comments").doc(comment.commentId);
+      batch.update(commentRef, { read: true });
+    });
+    await batch.commit();
+    notificationsContainer.innerHTML = ""; // Clear all
+  });
+  notificationsContainer.prepend(markAllButton);
 }
-
-// Call this when page loads
-document.addEventListener("DOMContentLoaded", function() {
-  displayPosts();
-});
-
-

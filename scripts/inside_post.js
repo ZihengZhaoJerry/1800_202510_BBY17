@@ -79,7 +79,8 @@ function submitComment() {
     const commentData = {
         user: username,
         commentText: commentText,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        read: false
     };
 
     // Store the comment in Firestore

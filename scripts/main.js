@@ -101,3 +101,58 @@ function displayPostsDynamically() {
 
 // Ensure Firebase is initialized before calling this function
 displayPostsDynamically();
+
+// Add/update these functions in your existing JS
+document.addEventListener('DOMContentLoaded', () => {
+  const searchForm = document.getElementById('searchForm');
+
+  if (searchForm) {
+    searchForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const searchInput = document.getElementById('searchInput');
+      const searchTermRaw = searchInput.value.trim();
+
+      if (!searchTermRaw) {
+        alert("Please enter a search term");
+        return;
+      }
+
+      // Convert search term to lowercase for a case-insensitive comparison
+      const searchTerm = searchTermRaw.toLowerCase();
+      
+      // Reference to Firestore collection (ensure Firebase is already initialized)
+      const db = firebase.firestore();
+      
+      try {
+        // Get all posts; note that for large collections, consider adding a proper indexing strategy.
+        const snapshot = await db.collection('posts').get();
+        let foundMatch = false;
+        
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          // Assuming 'title' field exists on each post
+          if (data.title) {
+            // Convert title to lowercase for case-insensitive matching
+            const titleLower = data.title.toLowerCase();
+            // Check if the search term exists within the title
+            if (titleLower.includes(searchTerm)) {
+              foundMatch = true;
+            }
+          }
+        });
+        
+        if (foundMatch) {
+          // If at least one match is found, redirect to the page that displays relevant posts.
+          window.location.href = `public_postTEMPLATE.html?search=${encodeURIComponent(searchTerm)}`;
+        } else {
+          // If no match is found, redirect to the non-existent posts page.
+          window.location.href = 'nonexist_makepost.html';
+        }
+      } catch (error) {
+        console.error("Error retrieving posts from Firestore:", error);
+        
+      }
+    });
+  }
+});
+
