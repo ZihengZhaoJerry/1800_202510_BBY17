@@ -10,7 +10,7 @@ function loadPost(postId) {
                 document.getElementById("postTitle").textContent = "Post Not Found";
                 return;
             }
-            
+
             const postData = postDoc.data();
             console.log("Current document data:", postData);
 

@@ -69,11 +69,11 @@ function readQuote(day) {
 // Input parameter is a string representing the collection we are reading from
 //------------------------------------------------------------------------------
 function displayPostsDynamically() {
-    let cardTemplate = document.getElementById("postCardTemplate"); // Reference post card template
+  let cardTemplate = document.getElementById("postCardTemplate"); // Reference post card template
 
   db.collection("posts").get()
-        .then(allPosts => {
-            document.getElementById("posts-go-here").innerHTML = ""; // Clear previous content
+      .then(allPosts => {
+          document.getElementById("posts-go-here").innerHTML = ""; // Clear previous content
 
           const postsArray = [];
           allPosts.forEach(doc => postsArray.push({ id: doc.id, data: doc.data() }));
@@ -90,21 +90,21 @@ function displayPostsDynamically() {
               const postAuthor = data.comments?.owner || "Anonymous";
               const postDate = data.timestamp?.toDate().toLocaleString() || "No Date";
 
-                let newCard = cardTemplate.content.cloneNode(true); // Clone template
+              let newCard = cardTemplate.content.cloneNode(true); // Clone template
 
-                // Update elements in the cloned template
+              // Update elements in the cloned template
               newCard.querySelector('.card-title').innerText = postTitle;
               newCard.querySelector('.card-text').innerText = postContent;
               newCard.querySelector('.card-author').innerText = `By: ${postAuthor}`;
               newCard.querySelector('.card-date').innerText = `Posted on: ${postDate}`;
-                
-                // Append the new card to the display section
-                document.getElementById("posts-go-here").appendChild(newCard);
-            });
-        })
-        .catch(error => {
-            console.error("Error fetching posts: ", error);
-        });
+
+              // Append the new card to the display section
+              document.getElementById("posts-go-here").appendChild(newCard);
+          });
+      })
+      .catch(error => {
+          console.error("Error fetching posts: ", error);
+      });
 }
 
 // Ensure Firebase is initialized before calling this function
