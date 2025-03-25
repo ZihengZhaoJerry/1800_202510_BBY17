@@ -128,7 +128,7 @@
     }
 */
 
-// Initialize when page loads
+// Initialize
 document.addEventListener('DOMContentLoaded', () => {
   const db = firebase.firestore();
   displayFilteredPosts(db);
@@ -154,7 +154,7 @@ async function displayFilteredPosts(db) {
 
       let hasMatches = false;
       
-      // Convert to array for async operations
+      // Convert to array
       const posts = [];
       postsSnapshot.forEach(doc => posts.push(doc));
 
@@ -178,6 +178,7 @@ async function displayFilteredPosts(db) {
               console.error("Error fetching user:", userError);
           }
 
+          // Card Template
           const newCard = cardTemplate.content.cloneNode(true);
           newCard.querySelector('.card-title').textContent = title;
           newCard.querySelector('.card-text').textContent = data.content || '';
