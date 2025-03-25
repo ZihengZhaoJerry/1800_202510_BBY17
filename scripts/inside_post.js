@@ -5,15 +5,20 @@
 function loadPost(postId) {
     db.collection("posts").doc(postId)
         .onSnapshot(postDoc => {
+            if (!postDoc.exists) {
+                console.error("Post not found");
+                document.getElementById("postTitle").textContent = "Post Not Found";
+                return;
+            }
             
-            let postData = postDoc.data(); // Corrected reference to document data
-            
+            const postData = postDoc.data();
             console.log("Current document data:", postData);
 
             document.getElementById("postTitle").textContent = postData.title || "Untitled Post";
-            document.getElementById("postContent").textContent = postData.content || "No content available.";
-            document.getElementById("postDate").textContent = postData.date
-                ? `Date: ${new Date(postData.date.toDate()).toLocaleString()}`
+            document.getElementById("postContent").textContent = postData.comments?.content || "No content available.";
+            document.getElementById("postAuthor").textContent = postData.comments?.owner || "Unknown author";
+            document.getElementById("postDate").textContent = postData.timestamp
+                ? `Posted on: ${postData.timestamp.toDate().toLocaleString()}`
                 : "Date: Unknown";
 
             document.querySelector(".container").setAttribute("data-post-id", postId);
@@ -23,8 +28,22 @@ function loadPost(postId) {
         });
 }
 
-// Call the function with a valid post ID
-loadPost("foetlUIpJx4OdBsAajiD");
+function displayPostInfo() {
+    let params = new URL(window.location.href); // Get URL
+    let ID = params.searchParams.get("docID");  // Get post ID from query param 'docID'
+    console.log("Loading post with ID:", ID);
+
+    if (ID) {
+        loadPost(ID);
+    } else {
+        console.error("No docID found in URL");
+        document.getElementById("postTitle").textContent = "Invalid post link";
+    }
+}
+
+// Call this function on page load
+displayPostInfo();
+
 
 /**
  * Function to fetch and display comments for the post

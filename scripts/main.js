@@ -71,24 +71,32 @@ function readQuote(day) {
 function displayPostsDynamically() {
     let cardTemplate = document.getElementById("postCardTemplate"); // Reference post card template
 
-    db.collection("posts").orderBy("date", "desc").get()  // Fetch posts ordered by date (newest first)
+  db.collection("posts").get()
         .then(allPosts => {
             document.getElementById("posts-go-here").innerHTML = ""; // Clear previous content
 
-            allPosts.forEach(doc => {
-                var postTitle = doc.data().title;
-                var postContent = doc.data().content;
-                var postAuthor = doc.data().author;
-                var postDate = doc.data().date ? doc.data().date.toDate().toLocaleString() : "No Date";
-                var docID = doc.id;
+          const postsArray = [];
+          allPosts.forEach(doc => postsArray.push({ id: doc.id, data: doc.data() }));
+
+          // Shuffle array and pick the first 3
+          const shuffledPosts = postsArray.sort(() => 0.5 - Math.random());
+          const selectedPosts = shuffledPosts.slice(0, 3);
+
+          selectedPosts.forEach(post => {
+              const data = post.data;
+
+              const postTitle = data.title || "No Title";
+              const postContent = data.comments?.content || "No Content";
+              const postAuthor = data.comments?.owner || "Anonymous";
+              const postDate = data.timestamp?.toDate().toLocaleString() || "No Date";
 
                 let newCard = cardTemplate.content.cloneNode(true); // Clone template
 
                 // Update elements in the cloned template
-                newCard.querySelector('.card-title').innerHTML = postTitle;
-                newCard.querySelector('.card-text').innerHTML = postContent;
-                newCard.querySelector('.card-author').innerHTML = `By: ${postAuthor}`;
-                newCard.querySelector('.card-date').innerHTML = `Posted on: ${postDate}`;
+              newCard.querySelector('.card-title').innerText = postTitle;
+              newCard.querySelector('.card-text').innerText = postContent;
+              newCard.querySelector('.card-author').innerText = `By: ${postAuthor}`;
+              newCard.querySelector('.card-date').innerText = `Posted on: ${postDate}`;
                 
                 // Append the new card to the display section
                 document.getElementById("posts-go-here").appendChild(newCard);
