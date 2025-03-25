@@ -168,7 +168,7 @@ function displayPostsDynamically() {
 
 */
 
-// In your search page JS (with form)
+// Function to store search term from search bar
 document.addEventListener('DOMContentLoaded', () => {
   const searchForm = document.getElementById('searchForm');
 
@@ -181,7 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Always redirect with search term
+    // Redirect with search term
     const searchTerm = encodeURIComponent(searchTermRaw.toLowerCase());
     window.location.href = `public_postTEMPLATE.html?search=${searchTerm}`;
   });

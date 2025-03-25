@@ -30,7 +30,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/ui/4.8.1/firebase-ui-auth.js"></script> 
     <link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/4.8.1/firebase-ui-auth.css" />
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script> 
+    <!-- <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script> -->
 
     <!-------------------------------------------->
     <!-- Other libraries and styles of your own -->
@@ -41,41 +41,42 @@
 </head>
 
 <body>
-  
-    <!-- Navbar -->
+    <!------------------------------>
+    <!-- Your HTML Layout go here -->
+    <!------------------------------>
+
+    <!-- our own navbar goes here -->
     <nav id="navbarPlaceholder"></nav>
 
-    <main class="container my-5">
-        <!-- Search Feedback Header -->
-        <div id="searchFeedback" class="mb-4"></div>
+    
+    <div class="container mt-5">
+      <h2>Make a Post</h2>
+      <form id="postForm">
+          <label for="title" class="form-label">Title:</label>
+          <input type="text" id="title" class="form-control" placeholder="Enter Your Title" required>
 
-        <!-- Posts Container -->
-        <div id="posts-go-here" class="row g-4"></div>
+          <br>
 
-        <!-- Post Template -->
-        <template id="postCardTemplate">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title"></h5>
-                    <p class="card-text"></p>
-                    <p class="card-author"></p>
-                    <p class="card-date"></p>
-                    <!-- Button to view the post -->
-                    <a class="view-post-button btn btn-primary mt-2">View Post</a>
-                </div>
-            </div>
-        </template>
-        
-    </main>
+          <label for="description" class="form-label">Enter Text:</label>
+          <input type="text" id="description" class="form-control large-input" placeholder="Description" required>
 
-    <!-- Footer -->
+          <br>
+
+          <button type="submit" class="btn btn-success">Submit Post</button>
+      </form>
+    </div>
+    <!-- stuff -->
+
+    <!-- our own footer goes here-->
     <nav id="footerPlaceholder"></nav>
 
-    <!-- Scripts -->
+    <!---------------------------------------------->
+    <!-- Your own JavaScript functions go here    -->
+    <!---------------------------------------------->
     <script src="./scripts/firebaseAPI_TEAM99.js"></script>
     <script src="./scripts/skeleton.js"></script>
-    <script src="./scripts/public_postTemplate.js"></script>  
     <script src="./scripts/script.js"></script>
+    <script src="./scripts/makepost.js"></script>
 
 </body>
 
