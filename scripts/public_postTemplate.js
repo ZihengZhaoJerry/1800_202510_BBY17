@@ -128,24 +128,108 @@
     }
 */
 
+// // Initialize when page loads
+// document.addEventListener('DOMContentLoaded', () => {
+//   const db = firebase.firestore();
+//   displayFilteredPosts(db);
+// });
+
+// async function displayFilteredPosts(db) {
+//   const urlParams = new URLSearchParams(window.location.search);
+//   const searchTerm = urlParams.get('search')?.toLowerCase();
+//   const postsContainer = document.getElementById('posts-go-here');
+//   const cardTemplate = document.getElementById('postCardTemplate');
+
+//   postsContainer.innerHTML = "<p>Loading posts...</p>";
+
+//   try {
+//       const postsSnapshot = await db.collection("posts").orderBy("timestamp", "desc").get();
+//       postsContainer.innerHTML = "";
+      
+//       if (searchTerm) {
+//           const header = document.createElement('h2');
+//           header.textContent = `Results for "${decodeURIComponent(searchTerm)}"`;
+//           postsContainer.appendChild(header);
+//       }
+
+//       let hasMatches = false;
+      
+//       // Convert to array for async operations
+//       const posts = [];
+//       postsSnapshot.forEach(doc => posts.push(doc));
+
+//       for (const doc of posts) {
+//           const data = doc.data();
+//           const title = data.title || '';
+//           const titleLower = title.toLowerCase();
+
+//           if (searchTerm && !titleLower.includes(searchTerm)) continue;
+
+//           hasMatches = true;
+          
+//           // Get user name from users collection
+//           let userName = "Anonymous";
+//           try {
+//               const userDoc = await db.collection("users").doc(data.owner).get();
+//               if (userDoc.exists) {
+//                   userName = userDoc.data().name || "Anonymous";
+//               }
+//           } catch (userError) {
+//               console.error("Error fetching user:", userError);
+//           }
+
+//           const newCard = cardTemplate.content.cloneNode(true);
+//           newCard.querySelector('.card-title').textContent = title;
+//           newCard.querySelector('.card-text').textContent = data.content || '';
+//           newCard.querySelector('.card-author').textContent = `Posted by: ${userName}`;
+          
+//           const postDate = data.timestamp?.toDate().toLocaleString() || "Unknown date";
+//           newCard.querySelector('.card-date').textContent = postDate;
+          
+//           const viewButton = newCard.querySelector('card-button');
+//           if (viewButton) {
+//               viewButton.href = `post.html?id=${doc.id}`; // <-- Added this line to set post link using Firestore ID
+//           }
+
+//           postsContainer.appendChild(newCard);
+//       }
+
+//       if (searchTerm && !hasMatches) {
+//           window.location.href = `nonexist_makepost.html?search=${encodeURIComponent(searchTerm)}`;
+//       }
+//   } catch (error) {
+//       console.error("Error loading posts:", error);
+//       postsContainer.innerHTML = "<p>Error loading posts. Please try again.</p>";
+//   }
+// }
+
+
+
+
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', () => {
   const db = firebase.firestore();
   displayFilteredPosts(db);
 });
 
+/**
+ * Function to fetch and display posts from Firestore,
+ * filter by search term if provided, and add a "View Post" button linking to inside_post.html.
+ */
 async function displayFilteredPosts(db) {
   const urlParams = new URLSearchParams(window.location.search);
   const searchTerm = urlParams.get('search')?.toLowerCase();
   const postsContainer = document.getElementById('posts-go-here');
   const cardTemplate = document.getElementById('postCardTemplate');
 
+  // Show a loading message while fetching posts
   postsContainer.innerHTML = "<p>Loading posts...</p>";
 
   try {
       const postsSnapshot = await db.collection("posts").orderBy("timestamp", "desc").get();
       postsContainer.innerHTML = "";
       
+      // If a search term is provided, display a header with the results information
       if (searchTerm) {
           const header = document.createElement('h2');
           header.textContent = `Results for "${decodeURIComponent(searchTerm)}"`;
@@ -154,7 +238,7 @@ async function displayFilteredPosts(db) {
 
       let hasMatches = false;
       
-      // Convert to array for async operations
+      // Convert snapshot to an array to process posts asynchronously
       const posts = [];
       postsSnapshot.forEach(doc => posts.push(doc));
 
@@ -163,11 +247,12 @@ async function displayFilteredPosts(db) {
           const title = data.title || '';
           const titleLower = title.toLowerCase();
 
+          // Filter posts based on the search term if present
           if (searchTerm && !titleLower.includes(searchTerm)) continue;
 
           hasMatches = true;
           
-          // Get user name from users collection
+          // Get the user name from the "users" collection using the post's owner field
           let userName = "Anonymous";
           try {
               const userDoc = await db.collection("users").doc(data.owner).get();
@@ -178,17 +263,24 @@ async function displayFilteredPosts(db) {
               console.error("Error fetching user:", userError);
           }
 
+          // Clone the card template and populate it with post data
           const newCard = cardTemplate.content.cloneNode(true);
           newCard.querySelector('.card-title').textContent = title;
           newCard.querySelector('.card-text').textContent = data.content || '';
           newCard.querySelector('.card-author').textContent = `Posted by: ${userName}`;
-          
           const postDate = data.timestamp?.toDate().toLocaleString() || "Unknown date";
           newCard.querySelector('.card-date').textContent = postDate;
+          
+          // Set the "View Post" button link to go to inside_post.html with the Firestore post ID
+          const viewButton = newCard.querySelector('.view-post-button');
+          if (viewButton) {
+              viewButton.href = `inside_post.html?postId=${doc.id}`;
+          }
           
           postsContainer.appendChild(newCard);
       }
 
+      // If a search was performed but no posts matched, redirect to a "nonexist_makepost.html" page
       if (searchTerm && !hasMatches) {
           window.location.href = `nonexist_makepost.html?search=${encodeURIComponent(searchTerm)}`;
       }
