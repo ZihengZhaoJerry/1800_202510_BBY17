@@ -134,8 +134,8 @@ function loadPost(postId) {
             console.log("Current document data:", postData);
 
             document.getElementById("postTitle").textContent = postData.title || "Untitled Post";
-            document.getElementById("postContent").textContent = postData.comments?.content || "No content available.";
-            document.getElementById("postAuthor").textContent = postData.comments?.owner || "Unknown author";
+            document.getElementById("postContent").textContent = postData.content || "No content available.";
+            document.getElementById("postAuthor").textContent = postData.owner || "Unknown author";
             document.getElementById("postDate").textContent = postData.timestamp
                 ? `Posted on: ${postData.timestamp.toDate().toLocaleString()}`
                 : "Date: Unknown";
