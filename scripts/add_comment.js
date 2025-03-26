@@ -13,11 +13,12 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
+const postID = 
 // Function to add comment to Firestore
 function add_comment() {
     // Get input values
-    var name = document.getElementById("name1").value;
-    var comment = document.getElementById("comment").value;
+    var name = document.getElementById("name1").value.trim();
+    var comment = document.getElementById("comment").value.trim();
     //var code = document.getElementById("comment code").value;
 
     console.log(name);
