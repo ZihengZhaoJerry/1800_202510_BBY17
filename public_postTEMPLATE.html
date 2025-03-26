@@ -19,6 +19,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous">
     </script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
     <!-------------------------------------------------------->
     <!-- Firebase 8 Library related CSS, JS, JQuery go here -->
@@ -29,7 +30,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/ui/4.8.1/firebase-ui-auth.js"></script> 
     <link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/4.8.1/firebase-ui-auth.css" />
-    <!-- <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script> -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script> 
 
     <!-------------------------------------------->
     <!-- Other libraries and styles of your own -->
@@ -40,82 +41,41 @@
 </head>
 
 <body>
-    <!------------------------------>
-    <!-- Your HTML Layout go here -->
-    <!------------------------------>
-
-    <!-- our own navbar goes here -->
+  
+    <!-- Navbar -->
     <nav id="navbarPlaceholder"></nav>
 
-    <!-- the body of your page goes here -->
+    <main class="container my-5">
+        <!-- Search Feedback Header -->
+        <div id="searchFeedback" class="mb-4"></div>
 
-      </nav>  
-  
-      <!--<ul id="public_post">-->
-  <div class="card text-center">
-    <div class="card-header">
-      Slang Post
-    </div>
-    <div class="card-body">
-      <h5 class="card-title" id="public_post"><span id="slang-goes-here"></span></h5>
-      <p class="card-text" >Description of Slang</p>
-      <a href="#" class="btn btn-primary">View full post</a>
-    </div>
-    <div class="card-footer text-body-secondary">
-      2 days ago
-    </div>
-  </div>
-  
+        <!-- Posts Container -->
+        <div id="posts-go-here" class="row g-4"></div>
 
-  <br>
-  
-  <div class="card text-center">
-    <div class="card-header">
-      Slang Post
-    </div>
-    <div class="card-body">
-      <h5 class="card-title">Slang</h5>
-      <p class="card-text">Description of Slang</p>
-      <a href="#" class="btn btn-primary">View full post</a>
-    </div>
-    <div class="card-footer text-body-secondary">
-      5 days ago
-    </div>
-  </div>
-  
-  <br>
-  
-  <div class="card text-center">
-    <div class="card-header">
-      Slang Post
-    </div>
-    <div class="card-body">
-      <h5 class="card-title">Slang</h5>
-      <p class="card-text">Description of Slang</p>
-      <a href="#" class="btn btn-primary">View full post</a>
-    </div>
-    <div class="card-footer text-body-secondary">
-      4 weeks ago
-    </div>
-  </div>
+        <!-- Post Template -->
+        <template id="postCardTemplate">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title"></h5>
+                    <p class="card-text"></p>
+                    <p class="card-author"></p>
+                    <p class="card-date"></p>
+                    <!-- Button to view the post -->
+                    <a class="view-post-button btn btn-primary mt-2">View Post</a>
+                </div>
+            </div>
+        </template>
+        
+    </main>
 
-
-
-
-    <!-- stuff -->
-
-    <!-- our own footer goes here-->
+    <!-- Footer -->
     <nav id="footerPlaceholder"></nav>
 
-    <!---------------------------------------------->
-    <!-- Your own JavaScript functions go here    -->
-    <!---------------------------------------------->
+    <!-- Scripts -->
     <script src="./scripts/firebaseAPI_TEAM99.js"></script>
     <script src="./scripts/skeleton.js"></script>
-    <script src="./scripts/public_postTemplate.js"></script>
-
-   
-    <!-- <script src="./scripts/script.js"></script> -->
+    <script src="./scripts/public_postTemplate.js"></script>  
+    <script src="./scripts/script.js"></script>
 
 </body>
 

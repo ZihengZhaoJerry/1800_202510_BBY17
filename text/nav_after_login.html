@@ -1,28 +1,40 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-success">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="#">
-            <img src="../images/Book1.png" height="36">
-            Huh!</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-            data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
-            aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item">
-                    <a class="nav-link" href="../aboutus.html">Home</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="../aboutus.html">Profile</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="../main.html">About Us</a>
-                </li>
-            </ul>
-            <div class="d-flex">
-                <a class="btn btn-outline-success" href="../index.html">Logout</a>
-            </div>
-        </div>
-    </div>
+  <div class="container-fluid">
+
+      <a class="navbar-brand" href="#">
+          <img src="../images/Huh!NavBar.png" height="36">
+      </a>
+
+      <div class="d-flex order-lg-2">
+          <a class="btn btn-outline-light position-relative me-2" id="notificationLink" href="notification.html">
+              <i class="bi bi-bell-fill"></i>
+              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                  1
+                  <span class="visually-hidden">unread messages</span>
+              </span>
+          </a>
+
+ 
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+              data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+              aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+          </button>
+      </div>
+
+
+      <div class="collapse navbar-collapse order-lg-1" id="navbarSupportedContent">
+
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+              <li class="nav-item">
+                  <a class="nav-link" href="../main.html">Home</a>
+              </li>
+          </ul>
+          
+
+          <div class="d-flex">
+              <a class="btn btn-outline-success" href="../index.html">Logout</a>
+          </div>
+      </div>
+  </div>
 </nav>
