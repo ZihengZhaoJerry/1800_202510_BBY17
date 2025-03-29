@@ -10,6 +10,9 @@
     <!------------------------>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Content-Security-Policy" 
+    content="script-src 'self' 'unsafe-eval' https://apis.google.com https://www.gstatic.com;
+            connect-src 'self' https://firestore.googleapis.com;">
 
     <!------------------------------------------>
     <!-- Bootstrap Library CSS JS CDN go here -->
@@ -30,61 +33,13 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/ui/4.8.1/firebase-ui-auth.js"></script> 
     <link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/4.8.1/firebase-ui-auth.css" />
-    <!-- <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script> -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
 
     <!-------------------------------------------->
     <!-- Other libraries and styles of your own -->
     <!-------------------------------------------->
     <!-- <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> -->
-    <!-- <link rel="stylesheet" href="./styles/style.css"> -->
-<style>
-    .notification-card {
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 15px;
-      margin-bottom: 15px;
-      background-color: #fff;
-    }
-
-    .notification-content h4 {
-      margin-top: 0;
-      color: #2c3e50;
-    }
-
-    .notification-content p {
-      margin: 8px 0;
-    }
-
-    .button-group {
-      margin-top: 15px;
-      display: flex;
-      gap: 10px;
-    }
-
-    .mark-read-btn, .view-post-btn {
-      padding: 8px 15px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    .mark-read-btn {
-      background-color: #3498db;
-      color: white;
-    }
-
-    .view-post-btn {
-      background-color: #2ecc71;
-      color: white;
-    }
-
-    .mark-all-btn {
-      background-color: #e74c3c;
-      color: white;
-      padding: 10px 20px;
-      margin-bottom: 20px;
-    }
-  </style>
+    <link rel="stylesheet" href="./styles/style.css">
 </head>
 
 <body>
@@ -106,7 +61,6 @@
          
       </div>
     </div>
-    <!-- stuff -->
 
     <!-- our own footer goes here-->
     <nav id="footerPlaceholder"></nav>
@@ -116,7 +70,7 @@
     <!---------------------------------------------->
     <script src="./scripts/firebaseAPI_TEAM99.js"></script>
     <script src="./scripts/skeleton.js"></script>
-    <!-- <script src="./scripts/script.js"></script> -->
+    <script src="./scripts/script.js"></script>
     <script src="./scripts/notification.js"></script>
 
 </body>
