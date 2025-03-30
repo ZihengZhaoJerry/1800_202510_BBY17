@@ -205,87 +205,268 @@
 
 
 
+/*
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', () => {
+      const db = firebase.firestore();
+      displayFilteredPosts(db);
+    });
 
-// Initialize when page loads
+
+    async function displayFilteredPosts(db) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const searchTerm = urlParams.get('search')?.toLowerCase();
+      const postsContainer = document.getElementById('posts-go-here');
+      const cardTemplate = document.getElementById('postCardTemplate');
+
+      // Show a loading message while fetching posts
+      postsContainer.innerHTML = "<p>Loading posts...</p>";
+
+      try {
+          const postsSnapshot = await db.collection("posts").orderBy("timestamp", "desc").get();
+          postsContainer.innerHTML = "";
+          
+          // If a search term is provided, display a header with the results information
+          if (searchTerm) {
+              const header = document.createElement('h2');
+              header.textContent = `Results for "${decodeURIComponent(searchTerm)}"`;
+              postsContainer.appendChild(header);
+          }
+
+          let hasMatches = false;
+          
+          // Convert snapshot to an array to process posts asynchronously
+          const posts = [];
+          postsSnapshot.forEach(doc => posts.push(doc));
+
+          for (const doc of posts) {
+              const data = doc.data();
+              const title = data.title || '';
+              const titleLower = title.toLowerCase();
+
+              // Filter posts based on the search term if present
+              if (searchTerm && !titleLower.includes(searchTerm)) continue;
+
+              hasMatches = true;
+              
+              // Get the user name from the "users" collection using the post's owner field
+              let userName = "Anonymous";
+              try {
+                  const userDoc = await db.collection("users").doc(data.owner).get();
+                  if (userDoc.exists) {
+                      userName = userDoc.data().name || "Anonymous";
+                  }
+              } catch (userError) {
+                  console.error("Error fetching user:", userError);
+              }
+
+              // Clone the card template and populate it with post data
+              const newCard = cardTemplate.content.cloneNode(true);
+              newCard.querySelector('.card-title').textContent = title;
+              newCard.querySelector('.card-text').textContent = data.content || '';
+              newCard.querySelector('.card-author').textContent = `Posted by: ${userName}`;
+              const postDate = data.timestamp?.toDate().toLocaleString() || "Unknown date";
+              newCard.querySelector('.card-date').textContent = postDate;
+              
+              // Set the "View Post" button link to go to inside_post.html with the Firestore post ID
+              const viewButton = newCard.querySelector('.view-post-button');
+              if (viewButton) {
+                viewButton.href = `./inside_post.html?postId=${encodeURIComponent(doc.id)}`;
+              }
+              
+              postsContainer.appendChild(newCard);
+          }
+
+          // If a search was performed but no posts matched, redirect to a "nonexist_makepost.html" page
+          if (searchTerm && !hasMatches) {
+              window.location.href = `nonexist_makepost.html?search=${encodeURIComponent(searchTerm)}`;
+          }
+      } catch (error) {
+          console.error("Error loading posts:", error);
+          postsContainer.innerHTML = "<p>Error loading posts. Please try again.</p>";
+      }
+    }
+*/
+/*
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', () => {
+      const db = firebase.firestore();
+      displayFilteredPosts(db);
+    });
+
+    async function displayFilteredPosts(db) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const searchTerm = urlParams.get('search')?.toLowerCase();
+      const postsContainer = document.getElementById('posts-go-here');
+      const cardTemplate = document.getElementById('postCardTemplate');
+
+      postsContainer.innerHTML = "<p>Loading posts...</p>";
+
+      try {
+        const postsSnapshot = await db.collection("posts").orderBy("timestamp", "desc").get();
+        postsContainer.innerHTML = "";
+        
+        if (searchTerm) {
+          const header = document.createElement('h2');
+          header.textContent = `Results for "${decodeURIComponent(searchTerm)}"`;
+          postsContainer.appendChild(header);
+        }
+
+        let hasMatches = false;
+        const posts = [];
+
+        // Process posts in parallel
+        await Promise.all(postsSnapshot.docs.map(async (doc) => {
+          const data = doc.data();
+          const titleLower = (data.title || '').toLowerCase();
+
+          if (searchTerm && !titleLower.includes(searchTerm)) return;
+
+          hasMatches = true;
+          let userName = "Anonymous";
+          
+          try {
+            const userDoc = await db.collection("users").doc(data.owner).get();
+            if (userDoc.exists) userName = userDoc.data().name || "Anonymous";
+          } catch (error) {
+            console.error("Error fetching user:", error);
+          }
+
+          const newCard = cardTemplate.content.cloneNode(true);
+          newCard.querySelector('.card-title').textContent = data.title || '';
+          newCard.querySelector('.card-text').textContent = data.content || '';
+          newCard.querySelector('.card-author').textContent = `Posted by: ${userName}`;
+          
+          const postDate = data.timestamp?.toDate().toLocaleString() || "Unknown date";
+          newCard.querySelector('.card-date').textContent = postDate;
+          
+          const viewButton = newCard.querySelector('.view-post-button');
+          if (viewButton) {
+            const postId = encodeURIComponent(doc.id);
+            viewButton.href = `/inside_post.html?postId=${postId}`;
+            viewButton.addEventListener('click', (e) => {
+              console.log('Navigating to post:', postId);
+            });
+          }
+          
+          postsContainer.appendChild(newCard);
+        }));
+
+        if (searchTerm && !hasMatches) {
+          window.location.href = `nonexist_makepost.html?search=${encodeURIComponent(searchTerm)}`;
+        }
+      } catch (error) {
+        console.error("Error loading posts:", error);
+        postsContainer.innerHTML = "<p>Error loading posts. Please try again.</p>";
+      }
+    }
+*/
+
 document.addEventListener('DOMContentLoaded', () => {
+  // Initialize Firebase
   const db = firebase.firestore();
+  
+  // Display posts with proper URL encoding
   displayFilteredPosts(db);
 });
 
-/**
- * Function to fetch and display posts from Firestore,
- * filter by search term if provided, and add a "View Post" button linking to inside_post.html.
- */
 async function displayFilteredPosts(db) {
   const urlParams = new URLSearchParams(window.location.search);
   const searchTerm = urlParams.get('search')?.toLowerCase();
   const postsContainer = document.getElementById('posts-go-here');
   const cardTemplate = document.getElementById('postCardTemplate');
 
-  // Show a loading message while fetching posts
-  postsContainer.innerHTML = "<p>Loading posts...</p>";
+  // Show loading state
+  postsContainer.innerHTML = '<div class="col-12 text-center"><div class="spinner-border" role="status"></div><p>Loading posts...</p></div>';
 
   try {
       const postsSnapshot = await db.collection("posts").orderBy("timestamp", "desc").get();
-      postsContainer.innerHTML = "";
+      postsContainer.innerHTML = '';
       
-      // If a search term is provided, display a header with the results information
-      if (searchTerm) {
-          const header = document.createElement('h2');
-          header.textContent = `Results for "${decodeURIComponent(searchTerm)}"`;
-          postsContainer.appendChild(header);
-      }
-
       let hasMatches = false;
-      
-      // Convert snapshot to an array to process posts asynchronously
-      const posts = [];
-      postsSnapshot.forEach(doc => posts.push(doc));
+      const postCards = [];
 
-      for (const doc of posts) {
+      // Process each post
+      postsSnapshot.forEach(doc => {
           const data = doc.data();
           const title = data.title || '';
           const titleLower = title.toLowerCase();
 
-          // Filter posts based on the search term if present
-          if (searchTerm && !titleLower.includes(searchTerm)) continue;
+          // Filter posts
+          if (searchTerm && !titleLower.includes(searchTerm)) return;
 
           hasMatches = true;
-          
-          // Get the user name from the "users" collection using the post's owner field
-          let userName = "Anonymous";
-          try {
-              const userDoc = await db.collection("users").doc(data.owner).get();
-              if (userDoc.exists) {
-                  userName = userDoc.data().name || "Anonymous";
-              }
-          } catch (userError) {
-              console.error("Error fetching user:", userError);
-          }
 
-          // Clone the card template and populate it with post data
+          // Create card element
           const newCard = cardTemplate.content.cloneNode(true);
+          const cardBody = newCard.querySelector('.card-body');
+
+          // Populate card content
           newCard.querySelector('.card-title').textContent = title;
-          newCard.querySelector('.card-text').textContent = data.content || '';
-          newCard.querySelector('.card-author').textContent = `Posted by: ${userName}`;
-          const postDate = data.timestamp?.toDate().toLocaleString() || "Unknown date";
-          newCard.querySelector('.card-date').textContent = postDate;
+          newCard.querySelector('.card-text').textContent = truncateText(data.content || '', 100);
+          newCard.querySelector('.card-author').textContent = `Posted by: ${data.authorName || 'Anonymous'}`;
           
-          // Set the "View Post" button link to go to inside_post.html with the Firestore post ID
+          // Format date
+          const postDate = data.timestamp?.toDate().toLocaleDateString('en-CA', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric'
+          }) || "Date unknown";
+          newCard.querySelector('.card-date').textContent = postDate;
+
+          // Set up view button
           const viewButton = newCard.querySelector('.view-post-button');
           if (viewButton) {
-            viewButton.href = `./inside_post.html?postId=${encodeURIComponent(doc.id)}`;
+              const postId = encodeURIComponent(doc.id);
+              viewButton.href = `inside_post.html?postId=${postId}`;
+              viewButton.addEventListener('click', (e) => {
+                  console.log('Navigating to post:', doc.id);
+                  localStorage.setItem('lastViewedPost', doc.id);
+              });
           }
-          
-          postsContainer.appendChild(newCard);
-      }
 
-      // If a search was performed but no posts matched, redirect to a "nonexist_makepost.html" page
+          // Create column wrapper
+          const colDiv = document.createElement('div');
+          colDiv.className = 'col-12 col-md-6 col-lg-4 mb-4';
+          colDiv.appendChild(newCard);
+          
+          postCards.push(colDiv);
+      });
+
+      // Add cards to container
+      postCards.forEach(card => postsContainer.appendChild(card));
+
+      // Handle no results
       if (searchTerm && !hasMatches) {
           window.location.href = `nonexist_makepost.html?search=${encodeURIComponent(searchTerm)}`;
       }
+
   } catch (error) {
       console.error("Error loading posts:", error);
-      postsContainer.innerHTML = "<p>Error loading posts. Please try again.</p>";
+      postsContainer.innerHTML = `
+          <div class="col-12">
+              <div class="alert alert-danger" role="alert">
+                  Error loading posts: ${error.message}
+              </div>
+          </div>
+      `;
+  }
+}
+
+// Helper functions
+function truncateText(text, maxLength) {
+  return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+}
+
+function decodePostId() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const encodedId = urlParams.get('postId');
+  if (!encodedId) return null;
+  
+  try {
+      return decodeURIComponent(encodedId);
+  } catch (error) {
+      console.error('Invalid post ID:', error);
+      return null;
   }
 }
