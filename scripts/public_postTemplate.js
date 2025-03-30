@@ -274,7 +274,7 @@ async function displayFilteredPosts(db) {
           // Set the "View Post" button link to go to inside_post.html with the Firestore post ID
           const viewButton = newCard.querySelector('.view-post-button');
           if (viewButton) {
-              viewButton.href = `inside_post.html?postId=${doc.id}`;
+            viewButton.href = `./inside_post.html?postId=${encodeURIComponent(doc.id)}`;
           }
           
           postsContainer.appendChild(newCard);

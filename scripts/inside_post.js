@@ -213,5 +213,4 @@ function loadComments(postId, useGlobal = false) {
     });
 }
 
-
-window.onload = displayPostInfo;
+document.addEventListener('DOMContentLoaded', displayPostInfo);
