@@ -1,184 +1,127 @@
-/* 
- 
- // Display notifications sorted by comment timestamp (newest first)
-    async function displayNotifications() {
-      const notificationsContainer = document.getElementById("postsContainer");
-      notificationsContainer.innerHTML = "";
-
-      const user = firebase.auth().currentUser;
-      if (!user) return;
-
-      // 1. Get user's posts
-      const postsSnapshot = await db.collection("posts")
-        .where("owner", "==", user.uid)
-        .get();
-
-      // 2. Collect all unread comments with timestamps
-      const unreadComments = [];
-      for (const postDoc of postsSnapshot.docs) {
-        const postData = postDoc.data();
-        if (!postData.comments) continue;
-
-        for (const commentId of postData.comments) {
-          const commentDoc = await db.collection("comments").doc(commentId).get();
-          const commentData = commentDoc.data();
-
-          if (commentData.read === false) {
-            const commenterDoc = await db.collection("users").doc(commentData.owner).get();
-            unreadComments.push({
-              postTitle: postData.details,
-              commenterName: commenterDoc.data().name,
-              commentId: commentId,
-              timestamp: commentData.timestamp // Ensure this field exists
-            });
-          }
-        }
-      }
-
-      // 3. Sort by most recent comment
-      unreadComments.sort((a, b) => b.timestamp - a.timestamp);
-
-      // 4. Display sorted notifications
-      unreadComments.forEach(comment => {
-        const card = document.createElement("div");
-        card.className = "notification-card";
-        card.innerHTML = `
-          <div class="notification-content">
-            <h5>New comment on: ${comment.postTitle}</h5>
-            <p>By: ${comment.commenterName}</p>
-            <button class="mark-read-btn" data-comment-id="${comment.commentId}">
-              Mark as Read
-            </button>
-            <button class="view-post-btn">View Post</button>
-          </div>
-        `;
-        notificationsContainer.appendChild(card);
-      });
-
-      // 5. Add click handlers
-      document.querySelectorAll(".mark-read-btn").forEach(button => {
-        button.addEventListener("click", async (e) => {
-          const commentId = e.target.dataset.commentId;
-          await db.collection("comments").doc(commentId).update({ read: true });
-          e.target.closest(".notification-card").remove();
-        });
-      });
-
-      // 6. Add "Mark All as Read" button (new!)
-      const markAllButton = document.createElement("button");
-      markAllButton.textContent = "Mark All as Read";
-      markAllButton.className = "mark-all-read-btn";
-      markAllButton.addEventListener("click", async () => {
-        const batch = db.batch();
-        unreadComments.forEach(comment => {
-          const commentRef = db.collection("comments").doc(comment.commentId);
-          batch.update(commentRef, { read: true });
-        });
-        await batch.commit();
-        notificationsContainer.innerHTML = ""; // Clear all
-      });
-      notificationsContainer.prepend(markAllButton);
-    }
-*/
-
-// Global variable to hold unread comments
-let globalUnreadComments = [];
-
-// Display notifications sorted by comment timestamp (newest first)
 async function displayNotifications() {
-  const notificationsContainer = document.getElementById("postsContainer");
-  notificationsContainer.innerHTML = "";
-
   const user = firebase.auth().currentUser;
   if (!user) return;
 
-  // 1. Get user's posts
-  const postsSnapshot = await db.collection("posts")
-    .where("owner", "==", user.uid)
-    .get();
-
-  // 2. For each post, query its "comments" subcollection for unread comments
-  const unreadComments = [];
-  for (const postDoc of postsSnapshot.docs) {
-    const postData = postDoc.data();
-    // Query unread comments in the subcollection of each post
-    const commentsSnapshot = await db.collection("posts")
-      .doc(postDoc.id)
-      .collection("comments")
-      .where("read", "==", false)
+  try {
+    // 1. Get all unread comments for this user
+    const commentsSnapshot = await db.collection('all_comments')
+      .where('postOwner', '==', user.uid)
+      .where('read', '==', false)
+      .orderBy('timestamp', 'desc')
       .get();
+
+    // 2. Group comments by postId
+    const postsMap = new Map();
     
-    commentsSnapshot.forEach(commentDoc => {
-      const commentData = commentDoc.data();
-      const commenterName = commentData.user || "Anonymous";
-      unreadComments.push({
-        postId: postDoc.id,
-        postTitle: postData.title || "Untitled Post",
-        commenterName: commenterName,
-        commentId: commentDoc.id,
-        timestamp: commentData.timestamp
-      });
+    commentsSnapshot.forEach(doc => {
+      const comment = doc.data();
+      if (!postsMap.has(comment.postId)) {
+        postsMap.set(comment.postId, {
+          postId: comment.postId,
+          commentCount: 0,
+          latestComment: comment.timestamp.toDate(),
+          comments: []
+        });
+      }
+      const postEntry = postsMap.get(comment.postId);
+      postEntry.commentCount++;
+      postEntry.comments.push(comment);
+      if (comment.timestamp > postEntry.latestComment) {
+        postEntry.latestComment = comment.timestamp;
+      }
     });
-  }
 
-  // Store unread comments globally so markAllRead() can access them.
-  globalUnreadComments = unreadComments;
+    // 3. Get post details for each unique postId
+    const postsWithComments = [];
+    for (const [postId, data] of postsMap) {
+      const postDoc = await db.collection('posts').doc(postId).get();
+      if (postDoc.exists) {
+        postsWithComments.push({
+          ...postDoc.data(),
+          id: postId,
+          unreadCount: data.commentCount,
+          latestComment: data.latestComment
+        });
+      }
+    }
 
-  // 3. Sort unread comments by most recent timestamp (newest first)
-  unreadComments.sort((a, b) => {
-    if (!a.timestamp || !b.timestamp) return 0;
-    return b.timestamp.toMillis() - a.timestamp.toMillis();
-  });
+    // 4. Sort posts by latest comment time
+    postsWithComments.sort((a, b) => b.latestComment - a.latestComment);
 
-  // 4. Display sorted notifications
-  unreadComments.forEach(comment => {
-    const card = document.createElement("div");
-    card.className = "notification-card";
-    card.innerHTML = `
-      <div class="notification-content">
-        <h5>New comment on: ${comment.postTitle}</h5>
-        <p>By: ${comment.commenterName}</p>
-        <button class="mark-read-btn" data-post-id="${comment.postId}" data-comment-id="${comment.commentId}">
-          Mark as Read
-        </button>
-        <button class="view-post-btn" data-post-id="${comment.postId}">
-          View Post
-        </button>
+    // 5. Display notifications
+    const container = document.getElementById('postsContainer');
+    container.innerHTML = postsWithComments.map(post => `
+      <div class="card mb-3">
+        <div class="card-body">
+          <h5>${post.title}</h5>
+          <p>${post.content.substring(0, 50)}...</p>
+          <div class="d-flex justify-content-between align-items-center">
+            <small>
+              ${post.unreadCount} unread comments<br>
+              Last comment: ${post.latestComment.toLocaleString()}
+            </small>
+            <div>
+              <button class="btn btn-sm btn-primary" 
+                      onclick="viewPost('${post.id}')">
+                View Post
+              </button>
+              <button class="btn btn-sm btn-secondary" 
+                      onclick="markPostRead('${post.id}')">
+                Mark Read
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+  } catch (error) {
+    console.error('Error loading notifications:', error);
+    document.getElementById('postsContainer').innerHTML = `
+      <div class="alert alert-danger">
+        Error loading notifications. Please try again later.
       </div>
     `;
-    notificationsContainer.appendChild(card);
-  });
-
-  // 5. Add click handlers for "Mark as Read" and "View Post" buttons
-  document.querySelectorAll(".mark-read-btn").forEach(button => {
-    button.addEventListener("click", async (e) => {
-      const postId = e.target.dataset.postId;
-      const commentId = e.target.dataset.commentId;
-      await db.collection("posts").doc(postId).collection("comments").doc(commentId).update({ read: true });
-      e.target.closest(".notification-card").remove();
-    });
-  });
-
-  document.querySelectorAll(".view-post-btn").forEach(button => {
-    button.addEventListener("click", (e) => {
-      const postId = e.target.dataset.postId;
-      window.location.href = `inside_post.html?postId=${postId}`;
-    });
-  });
+  }
 }
 
-// Global function called by the "Mark all as read" button in the HTML
-async function markAllRead() {
-  if (globalUnreadComments.length === 0) return;
-  const batch = db.batch();
-  globalUnreadComments.forEach(comment => {
-    const commentRef = db.collection("posts").doc(comment.postId).collection("comments").doc(comment.commentId);
-    batch.update(commentRef, { read: true });
-  });
-  await batch.commit();
-  // Refresh notifications after marking all as read
-  displayNotifications();
+// Helper functions
+async function markPostRead(postId) {
+  try {
+    // Get all unread comments for this post
+    const commentsSnapshot = await db.collection('all_comments')
+      .where('postId', '==', postId)
+      .where('read', '==', false)
+      .get();
+
+    // Batch update
+    const batch = db.batch();
+    
+    commentsSnapshot.forEach(doc => {
+      // Update all_comments
+      const globalRef = db.collection('all_comments').doc(doc.id);
+      batch.update(globalRef, { read: true });
+      
+      // Update subcollection comment
+      const subcollectionRef = db.collection('posts')
+        .doc(postId)
+        .collection('comments')
+        .doc(doc.id);
+      batch.update(subcollectionRef, { read: true });
+    });
+
+    await batch.commit();
+    displayNotifications(); // Refresh the list
+  } catch (error) {
+    console.error('Error marking post read:', error);
+  }
 }
 
-// Call displayNotifications() on page load
-window.onload = displayNotifications;
+function viewPost(postId) {
+  window.location.href = `inside_post.html?postId=${postId}`;
+}
+
+// Initialize
+firebase.auth().onAuthStateChanged(user => {
+  if (user) displayNotifications();
+});
