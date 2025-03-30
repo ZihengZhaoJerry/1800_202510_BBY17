@@ -1,4 +1,3 @@
-
 const posts = [
     { id: 1, title: "First Post", content: "This is the first post." },
     { id: 2, title: "Second Post", content: "This is the second post." }
@@ -7,21 +6,23 @@ const posts = [
 function displayPosts() {
     const postsContainer = document.getElementById('posts');
     postsContainer.innerHTML = '';
-    
+
     posts.forEach((post, index) => {
-        const postElement = document.createElement('div');
-        postElement.className = 'col-md-4';
-        postElement.innerHTML = `
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title"><a href="post.html?id=${post.id}" class="text-decoration-none">${post.title}</a></h5>
-                    <p class="card-text">${post.content}</p>
-                    <button class="btn btn-warning btn-sm" onclick="editPost(${index})">Edit</button>
-                    <button class="btn btn-danger btn-sm" onclick="deletePost(${index})">Delete</button>
-                </div>
-            </div>
-        `;
-        postsContainer.appendChild(postElement);
+        const template = document.querySelector(".post-card.d-none");
+        const clone = template.cloneNode(true);
+        clone.classList.remove("d-none");
+
+        clone.querySelector(".post-title").textContent = post.title;
+        clone.querySelector(".post-description").textContent = post.content;
+
+        const editBtn = clone.querySelector(".edit-btn");
+        editBtn.addEventListener("click", () => editPost(index));
+
+        // Hide or remove the delete button
+        const deleteBtn = clone.querySelector(".delete-btn");
+        if (deleteBtn) deleteBtn.remove();
+
+        postsContainer.appendChild(clone);
     });
 }
 
@@ -35,11 +36,54 @@ function editPost(index) {
     }
 }
 
-function deletePost(index) {
-    if (confirm("Are you sure you want to delete this post?")) {
-        posts.splice(index, 1);
-        displayPosts();
-    }
+displayPosts();
+
+function loadPosts() {
+    const postsContainer = document.getElementById("posts");
+    postsContainer.innerHTML = "";
+
+    db.collection("posts")
+        .orderBy("timestamp", "desc")
+        .get()
+        .then((querySnapshot) => {
+            querySnapshot.forEach((doc) => {
+                const post = doc.data();
+                const template = document.querySelector(".post-card.d-none");
+                const clone = template.cloneNode(true);
+                clone.classList.remove("d-none");
+
+                clone.querySelector(".post-title").textContent = post.title;
+                clone.querySelector(".post-description").textContent = post.description || post.content || "";
+
+                const editBtn = clone.querySelector(".edit-btn");
+                editBtn.addEventListener("click", function () {
+                    const newTitle = prompt("Edit title:", post.title);
+                    const newDesc = prompt("Edit description:", post.description || post.content || "");
+                    if (newTitle && newDesc) {
+                        db.collection("posts").doc(doc.id).update({
+                            title: newTitle.trim(),
+                            description: newDesc.trim()
+                        }).then(() => {
+                            alert("Post updated.");
+                            loadPosts();
+                        }).catch(error => {
+                            console.error("Error updating post:", error);
+                        });
+                    }
+                });
+
+                // Hide or remove the delete button
+                const deleteBtn = clone.querySelector(".delete-btn");
+                if (deleteBtn) deleteBtn.remove();
+
+                postsContainer.appendChild(clone);
+            });
+        })
+        .catch((error) => {
+            console.error("Error getting documents: ", error);
+        });
 }
 
-displayPosts();
+if (document.getElementById("posts")) {
+    loadPosts();
+}
