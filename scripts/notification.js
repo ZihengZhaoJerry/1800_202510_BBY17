@@ -1,175 +1,173 @@
- /*  
+
+/*
+    try {
+      if (db && !db._configured) { // Check if db exists and isn't configured
+        db.settings({
+          experimentalForceLongPolling: true,
+          merge: true
+        });
+      }
+    } catch (error) {
+      console.error("Error configuring Firestore:", error);
+    }
+
+    // Main function to display notifications
     async function displayNotifications() {
-        const user = firebase.auth().currentUser;
-        if (!user) return;
+      const notificationsContainer = document.getElementById("postsContainer");
+      notificationsContainer.innerHTML = "<div class='text-center'><div class='spinner-border'></div></div>";
+      
+      const user = firebase.auth().currentUser;
+      if (!user) {
+        notificationsContainer.innerHTML = "<p class='text-center'>Please log in to view notifications</p>";
+        return;
+      }
 
-        try {
-          const notificationsContainer = document.getElementById("postsContainer");
-          notificationsContainer.innerHTML = "<p>Loading notifications...</p>";
+      try {
+        // Query with composite index
+        const query = db.collection("all_comments")
+          .where("postOwner", "==", user.uid)
+          .where("read", "==", false)
+          .orderBy("timestamp", "desc");
 
-          // Query with proper index
-          const query = db.collection("all_comments")
-            .where("postOwner", "==", user.uid)
-            .where("read", "==", false)
-            .orderBy("timestamp", "desc");
+        const unsubscribe = query.onSnapshot(async snapshot => {
+          if (snapshot.empty) {
+            notificationsContainer.innerHTML = "<p class='text-center'>No new notifications</p>";
+            return;
+          }
 
-          const snapshot = await query.get();
-          
-          const notifications = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-            timestamp: doc.data().timestamp.toDate()
+          const notifications = await Promise.all(snapshot.docs.map(async doc => {
+            const comment = doc.data();
+            const postDoc = await db.collection("posts").doc(comment.postId).get();
+            return {
+              id: doc.id,
+              ...comment,
+              postTitle: postDoc.data()?.title || "Deleted Post",
+              timestamp: comment.timestamp.toDate(),
+              postId: comment.postId
+            };
           }));
 
-          notificationsContainer.innerHTML = notifications.map(notif => `
-            <div class="card mb-3">
-              <div class="card-body">
-                <h5>New comment on your post</h5>
-                <p>${notif.commentText}</p>
-                <small class="text-muted">
-                  By ${notif.user} at ${notif.timestamp.toLocaleString()}
-                </small>
-                <button class="btn btn-sm btn-primary mt-2" 
-                        onclick="markNotificationRead('${notif.id}', '${notif.postId}')">
-                  Mark as Read
-                </button>
-              </div>
-            </div>
-          `).join('');
+          renderNotifications(notifications);
+        }, error => {
+          console.error("Notification error:", error);
+          showError("Error loading notifications");
+        });
 
-        } catch (error) {
-          console.error("Error loading notifications:", error);
-          document.getElementById("postsContainer").innerHTML = `
-            <div class="alert alert-danger">
-              Error loading notifications: ${error.message}
-            </div>
-          `;
-        }
+        window.addEventListener("beforeunload", () => unsubscribe());
+
+      } catch (error) {
+        console.error("Notification error:", error);
+        showError(error.message);
       }
+    }
 
-      // Mark notification as read
-      async function markNotificationRead(commentId, postId) {
-        try {
-          const batch = db.batch();
-          
-          // Update both collections
-          const globalRef = db.collection("all_comments").doc(commentId);
-          batch.update(globalRef, { read: true });
-
-          const postRef = db.collection("posts").doc(postId)
-            .collection("comments").doc(commentId);
-          batch.update(postRef, { read: true });
-
-          await batch.commit();
-          displayNotifications(); // Refresh the list
-        } catch (error) {
-          console.error("Error marking read:", error);
-          alert("Error updating notification status");
-        }
-      }
-
-      // Helper functions
-      async function markPostRead(postId) {
-        try {
-          // Get all unread comments for this post
-          const commentsSnapshot = await db.collection('all_comments')
-            .where('postId', '==', postId)
-            .where('read', '==', false)
-            .get();
-
-          // Batch update
-          const batch = db.batch();
-          
-          commentsSnapshot.forEach(doc => {
-            // Update all_comments
-            const globalRef = db.collection('all_comments').doc(doc.id);
-            batch.update(globalRef, { read: true });
-            
-            // Update subcollection comment
-            const subcollectionRef = db.collection('posts')
-              .doc(postId)
-              .collection('comments')
-              .doc(doc.id);
-            batch.update(subcollectionRef, { read: true });
-          });
-
-          await batch.commit();
-          displayNotifications(); // Refresh the list
-        } catch (error) {
-          console.error('Error marking post read:', error);
-        }
-      }
-
-      function viewPost(postId) {
-        window.location.href = `inside_post.html?postId=${postId}`;
-      }
-
-      // Initialize
-      firebase.auth().onAuthStateChanged(user => {
-        if (user) displayNotifications();
-      });
 */
 
-// notification.js
 
-// Initialize Firestore with long polling to prevent CSP issues
-const db = firebase.firestore();
-db.settings({
-  experimentalForceLongPolling: true,
-  merge: true
-});
 
-// Main function to display notifications
+/**********************
+ * DEBUGGING VERSION  *
+ **********************/
+
+// Firestore configuration check
+try {
+  if (db && !db._configured) {
+    db.settings({
+      experimentalForceLongPolling: true,
+      merge: true
+    });
+    console.debug("[INIT] Firestore settings configured");
+  }
+} catch (error) {
+  console.error("[INIT ERROR] Firestore config:", error);
+}
+
+// Main notification function
 async function displayNotifications() {
+  console.debug("[DISPLAY] Starting notifications load");
   const notificationsContainer = document.getElementById("postsContainer");
-  notificationsContainer.innerHTML = "<div class='text-center'><div class='spinner-border'></div></div>";
+  notificationsContainer.innerHTML = "<div class='text-center'><div class='spinner-border'></div><p>Loading notifications...</p></div>";
   
   const user = firebase.auth().currentUser;
+  console.debug("[AUTH] Current user:", user ? user.uid : "Not logged in");
+
   if (!user) {
     notificationsContainer.innerHTML = "<p class='text-center'>Please log in to view notifications</p>";
     return;
   }
 
   try {
-    // Query with composite index (must be created in Firestore)
+    console.debug("[QUERY] Building query for UID:", user.uid);
     const query = db.collection("all_comments")
       .where("postOwner", "==", user.uid)
       .where("read", "==", false)
       .orderBy("timestamp", "desc");
 
     const unsubscribe = query.onSnapshot(async snapshot => {
+      console.debug("[SNAPSHOT] Received update. Docs:", snapshot.docs.length);
+      console.log("[SNAPSHOT DETAILS]", snapshot.docs.map(d => ({
+        id: d.id,
+        data: d.data()
+      })));
+
       if (snapshot.empty) {
-        notificationsContainer.innerHTML = "<p class='text-center'>No new notifications</p>";
+        console.warn("[SNAPSHOT] No matching documents found");
+        notificationsContainer.innerHTML = `
+          <div class="alert alert-info">
+            No new notifications found. This could mean:
+            <ul class="mt-2">
+              <li>All comments have been marked as read</li>
+              <li>No one has commented on your posts yet</li>
+              <li>There might be a data configuration issue</li>
+            </ul>
+          </div>
+        `;
         return;
       }
 
-      // Get post details for each notification
+      console.debug("[PROCESSING] Starting post data fetch");
       const notifications = await Promise.all(snapshot.docs.map(async doc => {
         const comment = doc.data();
-        const postDoc = await db.collection("posts").doc(comment.postId).get();
-        return {
-          id: doc.id,
-          ...comment,
-          postTitle: postDoc.data()?.title || "Deleted Post",
-          timestamp: comment.timestamp.toDate(),
-          postId: comment.postId
-        };
+        console.debug("[COMMENT DATA]", comment);
+        
+        try {
+          const postDoc = await db.collection("posts").doc(comment.postId).get();
+          return {
+            id: doc.id,
+            ...comment,
+            postTitle: postDoc.data()?.title || "[Deleted Post]",
+            timestamp: comment.timestamp?.toDate() || new Date(),
+            postId: comment.postId
+          };
+        } catch (postError) {
+          console.error("[POST FETCH ERROR]", postError);
+          return {
+            ...comment,
+            postTitle: "[Error Loading Post]",
+            timestamp: new Date(),
+            postId: comment.postId
+          };
+        }
       }));
 
+      console.debug("[RENDERING] Prepared notifications:", notifications);
       renderNotifications(notifications);
     }, error => {
-      console.error("Notification snapshot error:", error);
-      showError("Error loading notifications");
+      console.error("[SNAPSHOT ERROR]", error);
+      showError(`Failed to load notifications: ${error.message}`);
     });
 
-    // Cleanup listener when leaving page
-    window.addEventListener("beforeunload", () => unsubscribe());
+    window.addEventListener("beforeunload", () => {
+      console.debug("[CLEANUP] Removing listener");
+      unsubscribe();
+    });
 
   } catch (error) {
-    console.error("Notification error:", error);
-    showError(error.message);
+    console.error("[MAIN ERROR]", error);
+    showError(`Fatal error: ${error.message}`);
   }
 }
+
 
 function renderNotifications(notifications) {
   const container = document.getElementById("postsContainer");

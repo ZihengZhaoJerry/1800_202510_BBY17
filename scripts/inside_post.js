@@ -294,7 +294,39 @@ function createCommentElement(commentData) {
   `;
 }
 
-// Comment submission
+/*
+    document.getElementById("commentForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      
+      const commentInput = document.getElementById("commentInput");
+      const commentText = commentInput.value.trim();
+      const postId = validatePostId(new URLSearchParams(window.location.search).get('postId'));
+
+      if (!commentText || !postId) {
+        alert("Please enter a valid comment");
+        return;
+      }
+
+      try {
+        const user = firebase.auth().currentUser;
+        if (!user) throw new Error("Not authenticated");
+
+        const commentData = {
+          user: user.displayName || "Anonymous",
+          commentText: commentText,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+          read: false
+        };
+
+        await db.collection("posts").doc(postId).collection("comments").add(commentData);
+        commentInput.value = "";
+      } catch (error) {
+        console.error("Error submitting comment:", error);
+        alert("Error submitting comment. Please try again.");
+      }
+    });
+*/
+
 document.getElementById("commentForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   
@@ -311,17 +343,46 @@ document.getElementById("commentForm").addEventListener("submit", async (e) => {
     const user = firebase.auth().currentUser;
     if (!user) throw new Error("Not authenticated");
 
+    // 1. Get post owner information
+    const postDoc = await db.collection("posts").doc(postId).get();
+    const postOwner = postDoc.data()?.owner;
+    
+    if (!postOwner) throw new Error("Post owner not found");
+
+    // 2. Create batch operation
+    const batch = db.batch();
+    
+    // Create references for both collections
+    const subcollectionRef = db.collection("posts")
+      .doc(postId)
+      .collection("comments")
+      .doc(); // Auto-generated ID
+
+    const allCommentsRef = db.collection("all_comments")
+      .doc(subcollectionRef.id); // Same ID for both
+
+    // 3. Prepare comment data
     const commentData = {
       user: user.displayName || "Anonymous",
       commentText: commentText,
       timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-      read: false
+      read: false,
+      postId: postId,
+      postOwner: postOwner // Critical for notifications
     };
 
-    await db.collection("posts").doc(postId).collection("comments").add(commentData);
+    // 4. Add both operations to batch
+    batch.set(subcollectionRef, commentData);
+    batch.set(allCommentsRef, commentData);
+
+    // 5. Commit batch
+    await batch.commit();
     commentInput.value = "";
+    
+    console.log("Comment added to both collections:", commentData);
+
   } catch (error) {
     console.error("Error submitting comment:", error);
-    alert("Error submitting comment. Please try again.");
+    alert(`Error submitting comment: ${error.message}`);
   }
 });
