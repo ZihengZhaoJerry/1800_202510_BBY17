@@ -1,89 +1,105 @@
-const posts = [
-    { id: 1, title: "First Post", content: "This is the first post." },
-    { id: 2, title: "Second Post", content: "This is the second post." }
-];
-
-function displayPosts() {
-    const postsContainer = document.getElementById('posts');
-    postsContainer.innerHTML = '';
-
-    posts.forEach((post, index) => {
-        const template = document.querySelector(".post-card.d-none");
-        const clone = template.cloneNode(true);
-        clone.classList.remove("d-none");
-
-        clone.querySelector(".post-title").textContent = post.title;
-        clone.querySelector(".post-description").textContent = post.content;
-
-        const editBtn = clone.querySelector(".edit-btn");
-        editBtn.addEventListener("click", () => editPost(index));
-
-        // Hide or remove the delete button
-        const deleteBtn = clone.querySelector(".delete-btn");
-        if (deleteBtn) deleteBtn.remove();
-
-        postsContainer.appendChild(clone);
-    });
-}
-
-function editPost(index) {
-    const newTitle = prompt("Edit title:", posts[index].title);
-    const newContent = prompt("Edit content:", posts[index].content);
-    if (newTitle && newContent) {
-        posts[index].title = newTitle;
-        posts[index].content = newContent;
-        displayPosts();
-    }
-}
-
-displayPosts();
-
 function loadPosts() {
-    const postsContainer = document.getElementById("posts");
-    postsContainer.innerHTML = "";
+  const user = firebase.auth().currentUser;
+  const postsContainer = document.getElementById("posts");
+  
+  if (!user) {
+      postsContainer.innerHTML = `<div class="col-12"><div class="alert alert-warning">Please log in to view your posts.</div></div>`;
+      return;
+  }
 
-    db.collection("posts")
-        .orderBy("timestamp", "desc")
-        .get()
-        .then((querySnapshot) => {
-            querySnapshot.forEach((doc) => {
-                const post = doc.data();
-                const template = document.querySelector(".post-card.d-none");
-                const clone = template.cloneNode(true);
-                clone.classList.remove("d-none");
+  postsContainer.innerHTML = `<div class="col-12"><div class="alert alert-info">Loading posts...</div></div>`;
 
-                clone.querySelector(".post-title").textContent = post.title;
-                clone.querySelector(".post-description").textContent = post.description || post.content || "";
+  db.collection("posts")
+      .where("owner", "==", user.uid)
+      .orderBy("timestamp", "desc")
+      .get()
+      .then((querySnapshot) => {
+          postsContainer.innerHTML = ''; 
 
-                const editBtn = clone.querySelector(".edit-btn");
-                editBtn.addEventListener("click", function () {
-                    const newTitle = prompt("Edit title:", post.title);
-                    const newDesc = prompt("Edit description:", post.description || post.content || "");
-                    if (newTitle && newDesc) {
-                        db.collection("posts").doc(doc.id).update({
-                            title: newTitle.trim(),
-                            description: newDesc.trim()
-                        }).then(() => {
-                            alert("Post updated.");
-                            loadPosts();
-                        }).catch(error => {
-                            console.error("Error updating post:", error);
+          if (querySnapshot.empty) {
+              postsContainer.innerHTML = `<div class="col-12"><div class="alert alert-info">No posts found. Create your first post!</div></div>`;
+              return;
+          }
+
+          querySnapshot.forEach((doc) => {
+              const post = doc.data();
+              const template = document.querySelector(".post-card.d-none");
+              
+              if (!template) {
+                  console.error("Post template not found!");
+                  return;
+              }
+
+              const clone = template.cloneNode(true);
+              clone.classList.remove("d-none");
+
+              // Populate data
+              clone.querySelector(".post-title").textContent = post.title;
+              clone.querySelector(".post-description").textContent = post.content || "";
+
+              // Edit button handler
+              const editBtn = clone.querySelector(".edit-btn");
+              editBtn.addEventListener("click", () => {
+                  const newTitle = prompt("Edit title:", post.title);
+                  const newContent = prompt("Edit content:", post.content);
+                  
+                  if (newTitle && newContent) {
+                      db.collection("posts").doc(doc.id).update({
+                          title: newTitle.trim(),
+                          content: newContent.trim(),
+                          timestamp: firebase.firestore.FieldValue.serverTimestamp() // Update timestamp
+                      }).then(() => loadPosts())
+                      .catch(error => {
+                          console.error("Update error:", error);
+                          alert("Error updating post: " + error.message);
+                      });
+                  }
+              });
+
+              const deleteBtn = clone.querySelector(".delete-btn");
+              deleteBtn.addEventListener("click", () => {
+                  if (confirm("Are you sure you want to delete this post permanently?")) {
+                      db.collection("posts").doc(doc.id).delete()
+                        .then(() => {
+                          loadPosts(); // Refresh the list after deletion
+                        })
+                        .catch(error => {
+                          console.error("Delete error:", error);
+                          alert("Error deleting post: " + error.message);
                         });
-                    }
-                });
+                  }
+              });
 
-                // Hide or remove the delete button
-                const deleteBtn = clone.querySelector(".delete-btn");
-                if (deleteBtn) deleteBtn.remove();
-
-                postsContainer.appendChild(clone);
-            });
-        })
-        .catch((error) => {
-            console.error("Error getting documents: ", error);
-        });
+              postsContainer.appendChild(clone);
+          });
+      })
+      .catch((error) => {
+          console.error("Error loading posts:", error);
+          postsContainer.innerHTML = `
+              <div class="col-12">
+                  <div class="alert alert-danger">
+                      Error loading posts: ${error.message}
+                  </div>
+              </div>
+          `;
+      });
 }
 
-if (document.getElementById("posts")) {
-    loadPosts();
-}
+// Initialize when auth state changes
+document.addEventListener('DOMContentLoaded', () => {
+  if (document.getElementById("posts")) {
+      firebase.auth().onAuthStateChanged(user => {
+          if (user) {
+              loadPosts();
+          } else {
+              document.getElementById("posts").innerHTML = `
+                  <div class="col-12">
+                      <div class="alert alert-warning">
+                          Please log in to view your posts.
+                      </div>
+                  </div>
+              `;
+          }
+      });
+  }
+});
