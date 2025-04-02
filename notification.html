@@ -37,6 +37,75 @@
     <!-------------------------------------------->
     <!-- <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> -->
     <link rel="stylesheet" href="./styles/style.css">
+    <style>
+    /* === Global Body Style === */
+body {
+  background-color: #ffffff; /* Pure white background */
+  color: #333; /* Clean readable text */
+}
+
+/* === Page Title Style === */
+h1 {
+  font-size: clamp(1.5rem, 5vw, 3rem);
+  font-weight: bold;
+  background: linear-gradient(to right, #ff8ae2, #a3e0ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 1rem;
+}
+
+/* === Button Style: Mark All as Read === */
+.btn-secondary {
+  border-radius: 25px;
+  background: linear-gradient(135deg, #ff69b4, #8a2be2);
+  color: white;
+  font-weight: bold;
+  transition: transform 0.2s ease, background 0.3s ease;
+  border: none;
+}
+
+.btn-secondary:hover {
+  transform: scale(1.05);
+  background: linear-gradient(135deg, #ff85c1, #9d5cf1);
+}
+
+/* === Notification Card === */
+.notification-card {
+  background-color: #ffffff;
+  border: 1px solid #f0f0f0;
+  border-radius: 20px;
+  padding: 1.2rem;
+  margin-bottom: 1.5rem;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.notification-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* === Notification Title === */
+.notification-title {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #2a4d8f;
+}
+
+/* === Notification Body === */
+.notification-body {
+  font-size: 1rem;
+  color: #666;
+  margin-top: 0.5rem;
+}
+
+/* === Responsive Adjustments === */
+@media (max-width: 768px) {
+  .notification-title {
+    font-size: 1.1rem;
+  }
+}
+
+  </style>
 </head>
 
 <body>
