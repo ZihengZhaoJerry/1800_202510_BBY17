@@ -73,11 +73,10 @@ function renderNotifications(notifications) {
             ${notif.user} - ${notif.timestamp.toLocaleString()}
           </small>
           <div>
-            <button class="btn btn-sm btn-outline-primary mark-read-btn">
+            <button class="btn read-more-btn mark-read-btn">
               Mark Read
             </button>
-            <a href="inside_post.html?postId=${notif.postId}" 
-               class="btn btn-sm btn-primary">
+            <a href="inside_post.html?postId=${notif.postId}" class="btn read-more-btn">
               View Post
             </a>
           </div>
