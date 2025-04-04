@@ -1,35 +1,51 @@
 document.getElementById("postForm").addEventListener("submit", function (event) {
-  event.preventDefault(); 
+  event.preventDefault();
+
+  // Get elements
+  const titleInput = document.getElementById("title");
+  const descInput = document.getElementById("description");
+  const alertModal = new bootstrap.Modal(document.getElementById('alertModal'));
 
   // Get user input values
-  let title = document.getElementById("title").value.trim();
-  let description = document.getElementById("description").value.trim();
+  let title = titleInput.value.trim();
+  let description = descInput.value.trim();
+
+  // Validation function
+  const showAlert = (title, message, isSuccess) => {
+    const alertTitle = document.getElementById("alertTitle");
+    const alertMessage = document.getElementById("alertMessage");
+    
+    alertTitle.textContent = title;
+    alertTitle.className = `modal-title ${isSuccess ? 'text-success' : 'text-danger'}`;
+    alertMessage.textContent = message;
+    alertModal.show();
+  };
 
   // Validate input fields
   if (title === "" || description === "") {
-      alert("Please fill in all fields!");
-      return;
+    showAlert("Validation Error", "Please fill in all fields!", false);
+    return;
   }
 
-  // Check if user is authenticated
+  // Check authentication
   const user = firebase.auth().currentUser;
   if (!user) {
-      alert("You must be logged in to create a post!");
-      return; 
+    showAlert("Authentication Required", "You must be logged in to create a post!", false);
+    return;
   }
 
-  // Add to Firestore with UID as author
+  // Submit to Firestore
   db.collection("posts").add({
-      title: title,
-      content: description,
-      owner: user.uid, 
-      comments: [], 
-      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    title: title,
+    content: description,
+    owner: user.uid,
+    comments: [],
+    timestamp: firebase.firestore.FieldValue.serverTimestamp()
   }).then(() => {
-      alert("Post added successfully!");
-      document.getElementById("postForm").reset(); 
+    showAlert("Success!", "Post added successfully!", true);
+    document.getElementById("postForm").reset();
   }).catch(error => {
-      console.error("Error adding post: ", error);
-      alert("Error adding post. Check the console.");
+    console.error("Error adding post: ", error);
+    showAlert("Error", `Error adding post: ${error.message}`, false);
   });
 });

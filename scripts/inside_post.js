@@ -71,15 +71,24 @@ function handleInvalidPost() {
 
 function initializePostPage(postId) {
   const db = firebase.firestore();
-  
-  // Load post content
-  db.collection("posts").doc(postId).onSnapshot(postDoc => {
+
+  db.collection("posts").doc(postId).onSnapshot(async (postDoc) => {
     if (!postDoc.exists) return handleInvalidPost();
     
     const postData = postDoc.data();
     document.getElementById("postTitle").textContent = postData.title || "Untitled Post";
     document.getElementById("postContent").textContent = postData.content || "No content available.";
-    document.getElementById("postAuthor").textContent = postData.owner || "Unknown author";
+
+    // Fetch author name from users collection
+    try {
+      const userDoc = await db.collection("users").doc(postData.owner).get();
+      const userName = userDoc.exists ? userDoc.data().name : "Unknown Author";
+      document.getElementById("postAuthor").textContent = `${userName}`;
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      document.getElementById("postAuthor").textContent = "Author: Unknown";
+    }
+
     document.getElementById("postDate").textContent = postData.timestamp?.toDate().toLocaleString() || "Date: Unknown";
   }, error => {
     console.error("Error fetching post:", error);
