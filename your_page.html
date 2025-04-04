@@ -79,7 +79,7 @@ h2 {
 }
 
 /* === Buttons (Purple Outline Style) === */
-.edit-btn, .delete-btn {
+.edit-btn, .delete-btn, .view-btn {
   border-radius: 999px;
   font-size: 0.85rem;
   font-weight: bold;
@@ -112,13 +112,24 @@ h2 {
   transform: scale(1.05);
 }
 
+.view-btn {
+  border: 2px solid #38b000;
+  color: #38b000;
+}
+
+.view-btn:hover {
+  background-color: #38b000;
+  color: white;
+  transform: scale(1.05);
+}
+
 /* === Responsive Adjustments === */
 @media (max-width: 768px) {
   .post-title {
     font-size: 1rem;
   }
 
-  .edit-btn, .delete-btn {
+  .edit-btn, .delete-btn, .view-btn {
     font-size: 0.8rem;
     padding: 6px 14px;
   }
@@ -158,6 +169,7 @@ h2 {
                 <h5 class="card-title fw-bold post-title">Title goes here</h5>
                 <p class="card-text post-description">Description goes here</p>
                 <div class="d-flex justify-content-end gap-2">
+                    <a class="btn btn-sm btn-outline-primary view-btn">View</a>
                     <button class="btn btn-sm btn-outline-primary edit-btn">Edit</button>
                     <button class="btn btn-sm btn-outline-danger delete-btn">Delete</button>
                 </div>

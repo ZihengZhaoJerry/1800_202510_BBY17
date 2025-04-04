@@ -37,6 +37,9 @@ function loadPosts() {
         clone.querySelector(".post-title").textContent = post.title;
         clone.querySelector(".post-description").textContent = post.content || "";
 
+        const viewBtn = clone.querySelector(".view-btn");
+        viewBtn.href = `inside_post.html?postId=${doc.id}`;
+        
         // Edit button handler
         const editBtn = clone.querySelector(".edit-btn");
         editBtn.addEventListener("click", () => {
