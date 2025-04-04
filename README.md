@@ -2,22 +2,21 @@
 # Project Name
 
 ## Overview
-Summarize your project's purpose, problem solved, key features, user benefits, development context, and main technologies used.
 
-Example:
+This client-side JavaScript web application allows users to create, edit, delete, and search for posts about local slang, as well as comment on other users’ posts. Users receive real-time in-app notifications when someone comments on their post, enhancing engagement and interaction.
 
-This client-side JavaScript web application provides real-time weather updates for cities worldwide. It simplifies accessing weather information through an intuitive mobile-first interface, allowing users to input a city name and receive data on temperature, humidity, and conditions.
-
-Developed for the [Course Name] course, applying User-Centred Design practices, agile project management processes, integrating a weather API, and Firebase backend services.
+Developed for the COMP 1800 course, this project applied agile project management and user-centered design principles. It integrates Firebase Firestore to handle real-time updates and data synchronization for posts, comments, and notifications.
 
 ---
 
 ## Features
 
-Example:
-- Real-time weather updates for any city.
-- Responsive design for desktop and mobile.
-- Displays temperature, humidity, and weather conditions.
+- Post, edit, and delete local slang entries.
+- Comment on others' posts.
+- Real-time in-app notifications for new comments.
+- Search functionality to filter posts by keywords.
+- Mobile-first, responsive design for a smooth user experience.
+- Live syncing of posts and comments using Firebase Firestore.
 
 ---
 
@@ -27,7 +26,6 @@ Example:
 - **Frontend**: HTML, CSS, JavaScript
 - **Backend**: Firebase for hosting
 - **Database**: Firestore
-- **API**: OpenWeatherMap API
 
 ---
 
