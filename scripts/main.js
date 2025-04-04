@@ -23,156 +23,68 @@ function getNameFromAuth() {
   });
 }
 getNameFromAuth(); //run the function
-// Function to read the quote of the day from the Firestore "quotes" collection
-// Input param is the String representing the day of the week, aka, the document name
-function readQuote(day) {
-  db.collection("quotes").doc(day)                                                         //name of the collection and documents should matach excatly with what you have in Firestore
-    .onSnapshot(dayDoc => {                                                              //arrow notation
-      console.log("current document data: " + dayDoc.data());                          //.data() returns data object
-      document.getElementById("quote-goes-here").innerHTML = dayDoc.data().quote;      //using javascript to display the data on the right place
 
-      //Here are other ways to access key-value data fields
-      //$('#quote-goes-here').text(dayDoc.data().quote);         //using jquery object dot notation
-      //$("#quote-goes-here").text(dayDoc.data()["quote"]);      //using json object indexing
-      //document.querySelector("#quote-goes-here").innerHTML = dayDoc.data().quote;
-
-    }, (error) => {
-      console.log("Error calling onSnapshot", error);
-    });
-}
-readQuote("Tuesday");        //calling the function
-
-function writePosts() {
-  //define a variable for the collection you want to create in Firestore to populate data
-  var postsRef = db.collection("posts");
-
-  postsRef.add({
-    title: "Post1",
-    content: "Post1 content",
-    author: "Jerry",
-    date: firebase.firestore.FieldValue.serverTimestamp(),
-  });
-  postsRef.add({
-    title: "Post2",
-    content: "Post2 content",
-    author: "Jerry",
-    date: firebase.firestore.FieldValue.serverTimestamp(),
-  });
-  postsRef.add({
-    title: "Post3",
-    content: "Post3 content",
-    author: "Jerry",
-    date: firebase.firestore.FieldValue.serverTimestamp(),
-  });
-}
 //------------------------------------------------------------------------------
 // Input parameter is a string representing the collection we are reading from
 //------------------------------------------------------------------------------
-function displayPostsDynamically() {
+async function displayPostsDynamically() {
   let cardTemplate = document.getElementById("postCardTemplate"); // Reference post card template
 
-  db.collection("posts").get()
-    .then(allPosts => {
-      document.getElementById("posts-go-here").innerHTML = ""; // Clear previous content
+  try {
+    const allPostsSnapshot = await db.collection("posts").get();
+    document.getElementById("posts-go-here").innerHTML = ""; // Clear previous content
 
-      const postsArray = [];
-      allPosts.forEach(doc => postsArray.push({ id: doc.id, data: doc.data() }));
+    const postsArray = [];
+    allPostsSnapshot.forEach(doc => postsArray.push({ id: doc.id, data: doc.data() }));
 
-      // Shuffle array and pick the first 3
-      const shuffledPosts = postsArray.sort(() => 0.5 - Math.random());
-      const selectedPosts = shuffledPosts.slice(0, 3);
+    // Shuffle array and pick the first 3
+    const shuffledPosts = postsArray.sort(() => 0.5 - Math.random());
+    const selectedPosts = shuffledPosts.slice(0, 3);
 
-      selectedPosts.forEach(post => {
-        const data = post.data;
-    
-        const postTitle = data.title || "No Title";
-        const postContent = data.content || data.comments?.content || "No Content";
-        const postAuthor = data.author || data.comments?.owner || "Anonymous";
-        const postDate = data.timestamp?.toDate().toLocaleString() || "No Date";
-    
-        let newCard = cardTemplate.content.cloneNode(true); // Clone the card template
-    
-        // Update content in the cloned card
-        newCard.querySelector('.card-title').innerText = postTitle;
-        newCard.querySelector('.card-text').innerText = postContent;
-        newCard.querySelector('.card-author').innerText = `By: ${postAuthor}`;
-        newCard.querySelector('.card-date').innerText = `Posted on: ${postDate}`;
-    
-        // Set dynamic href for the read-more button
-        const readMoreBtn = newCard.querySelector('.read-more-btn');
-        readMoreBtn.setAttribute('href', `inside_post.html?postId=${post.id}`);
-    
-        // Add the card to the container
-        document.getElementById("posts-go-here").appendChild(newCard);
-    });
-    
-    
-    })
-    .catch(error => {
-      console.error("Error fetching posts: ", error);
-    });
+    for (const post of selectedPosts) {
+      const data = post.data;
+      const postTitle = data.title || "No Title";
+      const postContent = data.content || data.comments?.content || "No Content";
+      const postDate = data.timestamp?.toDate().toLocaleString() || "No Date";
+
+      // Fetch author name from users collection
+      let postAuthor = "Anonymous";
+      if (data.owner) {
+        try {
+          const userDoc = await db.collection("users").doc(data.owner).get();
+          if (userDoc.exists) {
+            postAuthor = userDoc.data().name || "Unknown User";
+          }
+        } catch (err) {
+          console.warn(`Failed to fetch user data for owner ${data.owner}: `, err);
+        }
+      }
+
+      let newCard = cardTemplate.content.cloneNode(true); // Clone the card template
+
+      // Update content in the cloned card
+      newCard.querySelector('.card-title').innerText = postTitle;
+      newCard.querySelector('.card-text').innerText = postContent;
+      newCard.querySelector('.card-author').innerText = `By: ${postAuthor}`;
+      newCard.querySelector('.card-date').innerText = `Posted on: ${postDate}`;
+
+      // Set dynamic href for the read-more button
+      const readMoreBtn = newCard.querySelector('.read-more-btn');
+      readMoreBtn.setAttribute('href', `inside_post.html?postId=${post.id}`);
+
+      // Add the card to the container
+      document.getElementById("posts-go-here").appendChild(newCard);
+    }
+
+  } catch (error) {
+    console.error("Error fetching posts: ", error);
+  }
 }
+
 
 // Ensure Firebase is initialized before calling this function
 displayPostsDynamically();
 
-
-/*
-  // Add/update these functions in your existing JS
-  document.addEventListener('DOMContentLoaded', () => {
-    const searchForm = document.getElementById('searchForm');
-
-    if (searchForm) {
-      searchForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const searchInput = document.getElementById('searchInput');
-        const searchTermRaw = searchInput.value.trim();
-
-        if (!searchTermRaw) {
-          alert("Please enter a search term");
-          return;
-        }
-
-        // Convert search term to lowercase for a case-insensitive comparison
-        const searchTerm = searchTermRaw.toLowerCase();
-        
-        // Reference to Firestore collection (ensure Firebase is already initialized)
-        const db = firebase.firestore();
-        
-        try {
-          // Get all posts; note that for large collections, consider adding a proper indexing strategy.
-          const snapshot = await db.collection('posts').get();
-          let foundMatch = false;
-          
-          snapshot.forEach(doc => {
-            const data = doc.data();
-            // Assuming 'title' field exists on each post
-            if (data.title) {
-              // Convert title to lowercase for case-insensitive matching
-              const titleLower = data.title.toLowerCase();
-              // Check if the search term exists within the title
-              if (titleLower.includes(searchTerm)) {
-                foundMatch = true;
-              }
-            }
-          });
-          
-          if (foundMatch) {
-            // If at least one match is found, redirect to the page that displays relevant posts.
-            window.location.href = `public_postTEMPLATE.html?search=${encodeURIComponent(searchTerm)}`;
-          } else {
-            // If no match is found, redirect to the non-existent posts page.
-            window.location.href = 'nonexist_makepost.html';
-          }
-        } catch (error) {
-          console.error("Error retrieving posts from Firestore:", error);
-          
-        }
-      });
-    }
-  });
-
-*/
 
 // Function to store search term from search bar
 document.addEventListener('DOMContentLoaded', () => {
