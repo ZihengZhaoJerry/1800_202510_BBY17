@@ -1,48 +1,127 @@
-
-// Function to load a post by its document ID (postId)
-function loadPost(postId) {
-  db.collection("posts").doc(postId)
-      .onSnapshot(postDoc => {
-          if (!postDoc.exists) {
-              console.error("Post not found");
-              document.getElementById("postTitle").textContent = "Post Not Found";
-              return;
-          }
-
-          const postData = postDoc.data();
-          console.log("Current document data:", postData);
-
-          document.getElementById("postTitle").textContent = postData.title || "Untitled Post";
-          document.getElementById("postContent").textContent = postData.content || "No content available.";
-          document.getElementById("postAuthor").textContent = postData.owner || "Unknown author";
-          document.getElementById("postDate").textContent = postData.timestamp
-              ? `Posted on: ${postData.timestamp.toDate().toLocaleString()}`
-              : "Date: Unknown";
-
-          // Optionally set a data attribute on a container element for later use
-          document.querySelector(".container").setAttribute("data-post-id", postId);
-      }, error => {
-          console.error("Error fetching post:", error);
-          document.getElementById("postTitle").textContent = "Post Not Found";
-      });
+// Post Loading Functions
+function setupPostListener(postId) {
+  const db = firebase.firestore();
+  return db.collection("posts").doc(postId)
+    .onSnapshot(
+      postDoc => handlePostSnapshot(postDoc),
+      error => handlePostError(error)
+    );
 }
 
-// Function to display post info by reading the "postId" query parameter from the URL
-function displayPostInfo() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const postId = urlParams.get("postId"); // Using "postId" consistently
-  console.log("Loading post with ID:", postId);
+function handlePostSnapshot(postDoc) {
+  if (!postDoc.exists) {
+    handleInvalidPost();
+    return;
+  }
+  
+  const postData = postDoc.data();
+  updatePostDisplay(postData);
+  fetchAndDisplayAuthor(postData.owner);
+}
 
-  if (postId) {
-      loadPost(postId);
-      loadComments(postId); // load comments using the same postId
-  } else {
-      console.error("No postId found in URL");
-      document.getElementById("postTitle").textContent = "Invalid post link";
+function updatePostDisplay(postData) {
+  document.getElementById("postTitle").textContent = postData.title || "Untitled Post";
+  document.getElementById("postContent").textContent = postData.content || "No content available.";
+  
+  const postDate = postData.timestamp?.toDate().toLocaleString() || "Date: Unknown";
+  document.getElementById("postDate").textContent = postDate;
+}
+
+async function fetchAndDisplayAuthor(userId) {
+  if (!userId) {
+    document.getElementById("postAuthor").textContent = "Unknown author";
+    return;
+  }
+
+  try {
+    const userDoc = await firebase.firestore().collection("users").doc(userId).get();
+    const userName = userDoc.exists ? userDoc.data().name : "Unknown author";
+    document.getElementById("postAuthor").textContent = userName;
+  } catch (error) {
+    console.error("Error fetching author:", error);
+    document.getElementById("postAuthor").textContent = "Unknown author";
   }
 }
 
-// Initialize when page loads
+// Comment System Functions
+function setupCommentsListener(postId) {
+  const db = firebase.firestore();
+  return db.collection("posts").doc(postId).collection("comments")
+    .orderBy("timestamp", "asc")
+    .onSnapshot(
+      snapshot => handleCommentsUpdate(snapshot),
+      error => handleCommentsError(error)
+    );
+}
+
+function handleCommentsUpdate(snapshot) {
+  const container = document.getElementById("commentsContainer");
+  if (snapshot.empty) {
+    container.innerHTML = "<p>No comments yet. Be the first to comment!</p>";
+    return;
+  }
+
+  container.innerHTML = snapshot.docs
+    .map(doc => createCommentElement(doc.data()))
+    .join("");
+}
+
+function createCommentElement(data) {
+  const timestamp = data.timestamp?.toDate().toLocaleString() || "Time Unknown";
+  return `
+    <div class="border p-2 mb-2 rounded">
+      <strong>${data.user || "Anonymous"}:</strong>
+      <p>${data.commentText}</p>
+      <small class="text-muted">${timestamp}</small>
+    </div>
+  `;
+}
+
+// Comment Submission Handler
+async function handleCommentSubmission(e) {
+  e.preventDefault();
+  const commentText = document.getElementById("commentInput").value.trim();
+  const urlParams = new URLSearchParams(window.location.search);
+  const postId = validatePostId(urlParams.get("postId"));
+
+  try {
+    if (!commentText) throw new Error("Please enter a comment");
+    if (!postId) throw new Error("Invalid post reference");
+    
+    const user = firebase.auth().currentUser;
+    if (!user) throw new Error("You must be logged in to comment");
+
+    const db = firebase.firestore();
+    const postDoc = await db.collection("posts").doc(postId).get();
+    const postOwner = postDoc.data()?.owner;
+
+    const batch = db.batch();
+    const commentRef = db.collection("posts").doc(postId)
+      .collection("comments").doc();
+    
+    const globalCommentRef = db.collection("all_comments").doc(commentRef.id);
+
+    const commentData = {
+      user: user.displayName || "Anonymous",
+      commentText: commentText,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      read: false,
+      postId: postId,
+      postOwner: postOwner
+    };
+
+    batch.set(commentRef, commentData);
+    batch.set(globalCommentRef, commentData);
+    await batch.commit();
+
+    document.getElementById("commentInput").value = "";
+  } catch (error) {
+    console.error("Comment submission failed:", error);
+    alert(error.message);
+  }
+}
+
+// Initialization
 document.addEventListener('DOMContentLoaded', () => {
   const urlParams = new URLSearchParams(window.location.search);
   const postId = validatePostId(urlParams.get('postId'));
@@ -52,138 +131,30 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
-  console.log('Loading post with ID:', postId);
-  initializePostPage(postId);
+  // Initialize post content
+  setupPostListener(postId);
+  setupCommentsListener(postId);
+
+  // Setup form submission
+  const commentForm = document.getElementById("commentForm");
+  if (commentForm) {
+    commentForm.addEventListener("submit", handleCommentSubmission);
+  }
 });
 
-// Helper functions
+// Validation
 function validatePostId(postId) {
   if (!postId) return null;
-  const decodedId = decodeURIComponent(postId).trim();
-  return /^[a-zA-Z0-9_-]{20}$/.test(decodedId) ? decodedId : null;
+  try {
+    const decodedId = decodeURIComponent(postId);
+    return /^[a-zA-Z0-9_-]{20}$/.test(decodedId) ? decodedId : null;
+  } catch (e) {
+    return null;
+  }
 }
 
 function handleInvalidPost() {
-  console.error('Invalid postId in URL');
+  console.error('Invalid post ID');
   document.getElementById("postTitle").textContent = "Post Not Found";
   setTimeout(() => window.location.href = '/', 3000);
 }
-
-function initializePostPage(postId) {
-  const db = firebase.firestore();
-
-  db.collection("posts").doc(postId).onSnapshot(async (postDoc) => {
-    if (!postDoc.exists) return handleInvalidPost();
-    
-    const postData = postDoc.data();
-    document.getElementById("postTitle").textContent = postData.title || "Untitled Post";
-    document.getElementById("postContent").textContent = postData.content || "No content available.";
-
-    // Fetch author name from users collection
-    try {
-      const userDoc = await db.collection("users").doc(postData.owner).get();
-      const userName = userDoc.exists ? userDoc.data().name : "Unknown Author";
-      document.getElementById("postAuthor").textContent = `${userName}`;
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      document.getElementById("postAuthor").textContent = "Author: Unknown";
-    }
-
-    document.getElementById("postDate").textContent = postData.timestamp?.toDate().toLocaleString() || "Date: Unknown";
-  }, error => {
-    console.error("Error fetching post:", error);
-    handleInvalidPost();
-  });
-
-  // Load comments
-  loadComments(postId);
-}
-
-// Comment handling functions
-function loadComments(postId) {
-  const commentsContainer = document.getElementById("commentsContainer");
-  commentsContainer.innerHTML = "<p>Loading comments...</p>";
-
-  db.collection("posts").doc(postId).collection("comments")
-    .orderBy("timestamp", "asc")
-    .onSnapshot(snapshot => {
-      commentsContainer.innerHTML = snapshot.empty 
-        ? "<p>No comments yet. Be the first to comment!</p>"
-        : Array.from(snapshot.docs).map(doc => createCommentElement(doc.data())).join('');
-    }, error => {
-      console.error("Error loading comments:", error);
-      commentsContainer.innerHTML = "<p>Error loading comments</p>";
-    });
-}
-
-function createCommentElement(commentData) {
-  return `
-    <div class="border p-2 mb-2 rounded">
-      <strong>${commentData.user || "Anonymous"}:</strong>
-      <p>${commentData.commentText}</p>
-      <small class="text-muted">
-        ${commentData.timestamp?.toDate().toLocaleString() || "Time Unknown"}
-      </small>
-    </div>
-  `;
-}
-
-document.getElementById("commentForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  
-  const commentInput = document.getElementById("commentInput");
-  const commentText = commentInput.value.trim();
-  const postId = validatePostId(new URLSearchParams(window.location.search).get('postId'));
-
-  if (!commentText || !postId) {
-    alert("Please enter a valid comment");
-    return;
-  }
-
-  try {
-    const user = firebase.auth().currentUser;
-    if (!user) throw new Error("Not authenticated");
-
-    // 1. Get post owner information
-    const postDoc = await db.collection("posts").doc(postId).get();
-    const postOwner = postDoc.data()?.owner;
-    
-    if (!postOwner) throw new Error("Post owner not found");
-
-    // 2. Create batch operation
-    const batch = db.batch();
-    
-    // Create references for both collections
-    const subcollectionRef = db.collection("posts")
-      .doc(postId)
-      .collection("comments")
-      .doc(); // Auto-generated ID
-
-    const allCommentsRef = db.collection("all_comments")
-      .doc(subcollectionRef.id); // Same ID for both
-
-    // 3. Prepare comment data
-    const commentData = {
-      user: user.displayName || "Anonymous",
-      commentText: commentText,
-      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-      read: false,
-      postId: postId,
-      postOwner: postOwner // Critical for notifications
-    };
-
-    // 4. Add both operations to batch
-    batch.set(subcollectionRef, commentData);
-    batch.set(allCommentsRef, commentData);
-
-    // 5. Commit batch
-    await batch.commit();
-    commentInput.value = "";
-    
-    console.log("Comment added to both collections:", commentData);
-
-  } catch (error) {
-    console.error("Error submitting comment:", error);
-    alert(`Error submitting comment: ${error.message}`);
-  }
-});

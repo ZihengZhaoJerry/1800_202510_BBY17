@@ -103,7 +103,7 @@ populateComments();
 
 // another function for populate the comments
 document.getElementById("commentForm").addEventListener("submit", function (event) {
-    event.preventDefault(); // Prevents actual form submission
+    event.preventDefault(); 
 
     // Get user input
     let name = document.getElementById("name1").value;

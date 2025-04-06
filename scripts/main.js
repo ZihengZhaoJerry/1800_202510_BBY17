@@ -1,106 +1,105 @@
 function getNameFromAuth() {
-  firebase.auth().onAuthStateChanged(user => {
-    // Check if a user is signed in:
-    if (user) {
-      // Do something for the currently logged-in user here: 
-      console.log(user.uid); //print the uid in the browser console
-      console.log(user.displayName);  //print the user name in the browser console
-      userName = user.displayName;
-
-      //method #1:  insert with JS
-      document.getElementById("name-goes-here").innerText = userName;
-
-      //method #2:  insert using jquery
-      //$("#name-goes-here").text(userName); //using jquery
-
-      //method #3:  insert using querySelector
-      //document.querySelector("#name-goes-here").innerText = userName
-
-    } else {
-      // No user is signed in.
-      console.log("No user is logged in");
-    }
-  });
+  firebase.auth().onAuthStateChanged(handleAuthStateChange);
 }
-getNameFromAuth(); //run the function
 
-//------------------------------------------------------------------------------
-// Input parameter is a string representing the collection we are reading from
-//------------------------------------------------------------------------------
-async function displayPostsDynamically() {
-  let cardTemplate = document.getElementById("postCardTemplate"); // Reference post card template
-
-  try {
-    const allPostsSnapshot = await db.collection("posts").get();
-    document.getElementById("posts-go-here").innerHTML = ""; // Clear previous content
-
-    const postsArray = [];
-    allPostsSnapshot.forEach(doc => postsArray.push({ id: doc.id, data: doc.data() }));
-
-    // Shuffle array and pick the first 3
-    const shuffledPosts = postsArray.sort(() => 0.5 - Math.random());
-    const selectedPosts = shuffledPosts.slice(0, 3);
-
-    for (const post of selectedPosts) {
-      const data = post.data;
-      const postTitle = data.title || "No Title";
-      const postContent = data.content || data.comments?.content || "No Content";
-      const postDate = data.timestamp?.toDate().toLocaleString() || "No Date";
-
-      // Fetch author name from users collection
-      let postAuthor = "Anonymous";
-      if (data.owner) {
-        try {
-          const userDoc = await db.collection("users").doc(data.owner).get();
-          if (userDoc.exists) {
-            postAuthor = userDoc.data().name || "Unknown User";
-          }
-        } catch (err) {
-          console.warn(`Failed to fetch user data for owner ${data.owner}: `, err);
-        }
-      }
-
-      let newCard = cardTemplate.content.cloneNode(true); // Clone the card template
-
-      // Update content in the cloned card
-      newCard.querySelector('.card-title').innerText = postTitle;
-      newCard.querySelector('.card-text').innerText = postContent;
-      newCard.querySelector('.card-author').innerText = `By: ${postAuthor}`;
-      newCard.querySelector('.card-date').innerText = `Posted on: ${postDate}`;
-
-      // Set dynamic href for the read-more button
-      const readMoreBtn = newCard.querySelector('.read-more-btn');
-      readMoreBtn.setAttribute('href', `inside_post.html?postId=${post.id}`);
-
-      // Add the card to the container
-      document.getElementById("posts-go-here").appendChild(newCard);
-    }
-
-  } catch (error) {
-    console.error("Error fetching posts: ", error);
+function handleAuthStateChange(user) {
+  if (user) {
+    console.log(user.uid, user.displayName);
+    updateUserNameDisplay(user.displayName);
+  } else {
+    console.log("No user is logged in");
   }
 }
 
+function updateUserNameDisplay(userName) {
+  const nameElement = document.getElementById("name-goes-here");
+  if (nameElement) nameElement.innerText = userName;
+}
 
-// Ensure Firebase is initialized before calling this function
-displayPostsDynamically();
+async function fetchPosts() {
+  try {
+    const snapshot = await db.collection("posts").get();
+    return snapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
+  } catch (error) {
+    console.error("Error fetching posts: ", error);
+    return [];
+  }
+}
 
+function selectRandomPosts(postsArray, count = 3) {
+  return postsArray.sort(() => 0.5 - Math.random()).slice(0, count);
+}
 
-// Function to store search term from search bar
-document.addEventListener('DOMContentLoaded', () => {
-  const searchForm = document.getElementById('searchForm');
+async function getPostAuthor(userId) {
+  try {
+    const userDoc = await db.collection("users").doc(userId).get();
+    return userDoc.exists ? userDoc.data().name || "Unknown User" : "Anonymous";
+  } catch (err) {
+    console.warn(`Failed to fetch user ${userId}: `, err);
+    return "Anonymous";
+  }
+}
 
-  searchForm?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const searchTermRaw = document.getElementById('searchInput').value.trim();
+function createCardElement(cardTemplate, post, author, date) {
+  const newCard = cardTemplate.content.cloneNode(true);
+  newCard.querySelector('.card-title').innerText = post.data.title || "No Title";
+  newCard.querySelector('.card-text').innerText = post.data.content || "No Content";
+  newCard.querySelector('.card-author').innerText = `By: ${author}`;
+  newCard.querySelector('.card-date').innerText = `Posted on: ${date}`;
+  
+  const readMoreBtn = newCard.querySelector('.read-more-btn');
+  readMoreBtn?.setAttribute('href', `inside_post.html?postId=${post.id}`);
+  return newCard;
+}
 
-    if (!searchTermRaw) {
-      alert("Please enter a search term");
-      return;
+async function processSinglePost(post, cardTemplate) {
+  const postDate = post.data.timestamp?.toDate().toLocaleString() || "No Date";
+  const author = await getPostAuthor(post.data.owner);
+  return createCardElement(cardTemplate, post, author, postDate);
+}
+
+async function displayPosts() {
+  const cardTemplate = document.getElementById("postCardTemplate");
+  const container = document.getElementById("posts-go-here");
+  if (!cardTemplate || !container) return;
+
+  container.innerHTML = ""; 
+
+  try {
+    const postsArray = await fetchPosts();
+    const selectedPosts = selectRandomPosts(postsArray);
+    
+    for (const post of selectedPosts) {
+      const newCard = await processSinglePost(post, cardTemplate);
+      container.appendChild(newCard);
     }
+  } catch (error) {
+    console.error("Error displaying posts: ", error);
+  }
+}
 
-    // Redirect with search term
-    const searchTerm = encodeURIComponent(searchTermRaw.toLowerCase());
-    window.location.href = `public_postTEMPLATE.html?search=${searchTerm}`;
-  });
+function setupSearchForm() {
+  const searchForm = document.getElementById('searchForm');
+  searchForm?.addEventListener('submit', handleSearchSubmit);
+}
+
+async function handleSearchSubmit(e) {
+  e.preventDefault();
+  const searchInput = document.getElementById('searchInput');
+  const searchTermRaw = searchInput.value.trim();
+
+  if (!searchTermRaw) {
+    alert("Please enter a search term");
+    return;
+  }
+
+  const searchTerm = encodeURIComponent(searchTermRaw.toLowerCase());
+  window.location.href = `public_postTEMPLATE.html?search=${searchTerm}`;
+}
+
+// Initialize functions
+document.addEventListener('DOMContentLoaded', () => {
+  getNameFromAuth();
+  displayPosts();
+  setupSearchForm();
 });
