@@ -5,7 +5,6 @@
           font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
     
-        /* Section Header / Feedback */
         #searchFeedback {
           font-size: 1.5rem;
           font-weight: bold;
@@ -16,12 +15,10 @@
           text-align: center;
         }
     
-        /* Cards Grid Padding */
         #posts-go-here {
           padding-bottom: 80px;
         }
     
-        /* Card Styles */
         .card {
           border-radius: 20px;
           border: 1px solid #f0f0f0;
@@ -55,7 +52,6 @@
           color: #555;
         }
     
-        /* View Post Button */
         .view-post-button {
           border-radius: 30px;
           font-weight: bold;
