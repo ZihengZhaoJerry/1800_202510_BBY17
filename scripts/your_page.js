@@ -1,15 +1,19 @@
+// Displays login requirement warning in specified container
 function showLoginMessage(container) {
   container.innerHTML = `<div class="col-12"><div class="alert alert-warning">Please log in to view your posts.</div></div>`;
 }
 
+// Shows loading indicator in post container
 function showLoadingState(container) {
   container.innerHTML = `<div class="col-12"><div class="alert alert-info">Loading posts...</div></div>`;
 }
 
+// Displays empty state message when no posts exist
 function showNoPostsMessage(container) {
   container.innerHTML = `<div class="col-12"><div class="alert alert-info">No posts found. Create your first post!</div></div>`;
 }
 
+// Handles and displays post loading errors with error details 
 function handlePostsError(container, error) {
   console.error("Error loading posts:", error);
   container.innerHTML = `
@@ -20,11 +24,13 @@ function handlePostsError(container, error) {
     </div>`;
 }
 
+// Populates template clone with post data from Firestore document
 function populatePostData(clone, post) {
   clone.querySelector(".post-title").textContent = post.title;
   clone.querySelector(".post-description").textContent = post.content || "";
 }
 
+// Configures edit button click handler with Bootstrap modal and Firestore update logic 
 function setupEditButton(editBtn, doc, post, loadPosts) {
   editBtn.addEventListener("click", () => {
     const editModal = new bootstrap.Modal(document.getElementById('editPostModal'));
@@ -58,6 +64,7 @@ function setupEditButton(editBtn, doc, post, loadPosts) {
   });
 }
 
+// Sets up delete button confirmation modal and Firestore delete operation
 function setupDeleteButton(deleteBtn, doc, loadPosts) {
   deleteBtn.addEventListener("click", () => {
     const deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
@@ -79,6 +86,7 @@ function setupDeleteButton(deleteBtn, doc, loadPosts) {
   });
 }
 
+// Creates post DOM element from template with populated data and action handlers
 function createPostElement(doc, loadPosts) {
   const post = doc.data();
   const template = document.querySelector(".post-card.d-none");
@@ -96,6 +104,7 @@ function createPostElement(doc, loadPosts) {
   return clone;
 }
 
+// Processes Firestore query snapshot to render posts or show empty state
 function processPostsSnapshot(querySnapshot, container, loadPosts) {
   container.innerHTML = '';
   if (querySnapshot.empty) return showNoPostsMessage(container);
@@ -106,6 +115,7 @@ function processPostsSnapshot(querySnapshot, container, loadPosts) {
   });
 }
 
+// Main post loading function with auth check and Firestore query execution 
 function loadPosts() {
   const user = firebase.auth().currentUser;
   const postsContainer = document.getElementById("posts");
@@ -121,6 +131,7 @@ function loadPosts() {
     .catch(error => handlePostsError(postsContainer, error));
 }
 
+// Initializes post list management based on authentication state 
 document.addEventListener('DOMContentLoaded', () => {
   if (!document.getElementById("posts")) return;
 

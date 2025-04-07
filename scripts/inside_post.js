@@ -1,4 +1,5 @@
-// Post Loading Functions
+/** Post Loading Functions */
+// Sets up real-time listener for post document changes 
 function setupPostListener(postId) {
   const db = firebase.firestore();
   return db.collection("posts").doc(postId)
@@ -8,6 +9,7 @@ function setupPostListener(postId) {
     );
 }
 
+// Handles post document snapshot updates and data validation
 function handlePostSnapshot(postDoc) {
   if (!postDoc.exists) {
     handleInvalidPost();
@@ -19,6 +21,7 @@ function handlePostSnapshot(postDoc) {
   fetchAndDisplayAuthor(postData.owner);
 }
 
+// Updates DOM elements with post data including title, content, and formatted date
 function updatePostDisplay(postData) {
   document.getElementById("postTitle").textContent = postData.title || "Untitled Post";
   document.getElementById("postContent").textContent = postData.content || "No content available.";
@@ -27,6 +30,7 @@ function updatePostDisplay(postData) {
   document.getElementById("postDate").textContent = postDate;
 }
 
+// Fetches and displays author information from Firestore using user ID
 async function fetchAndDisplayAuthor(userId) {
   if (!userId) {
     document.getElementById("postAuthor").textContent = "Unknown author";
@@ -43,7 +47,8 @@ async function fetchAndDisplayAuthor(userId) {
   }
 }
 
-// Comment System Functions
+/** Comment System Functions */
+// Initializes real-time listener for comments collection changes
 function setupCommentsListener(postId) {
   const db = firebase.firestore();
   return db.collection("posts").doc(postId).collection("comments")
@@ -54,6 +59,7 @@ function setupCommentsListener(postId) {
     );
 }
 
+// Processes comments snapshot to update UI, showing message if no comments exist 
 function handleCommentsUpdate(snapshot) {
   const container = document.getElementById("commentsContainer");
   if (snapshot.empty) {
@@ -66,6 +72,7 @@ function handleCommentsUpdate(snapshot) {
     .join("");
 }
 
+// Creates HTML template string for comment element using comment data
 function createCommentElement(data) {
   const timestamp = data.timestamp?.toDate().toLocaleString() || "Time Unknown";
   return `
@@ -77,7 +84,8 @@ function createCommentElement(data) {
   `;
 }
 
-// Comment Submission Handler
+/** Comment Submission Handler */
+// Handles comment form submission with validation and Firestore batch write
 async function handleCommentSubmission(e) {
   e.preventDefault();
   const commentText = document.getElementById("commentInput").value.trim();
@@ -121,7 +129,8 @@ async function handleCommentSubmission(e) {
   }
 }
 
-// Initialization
+/** Initialization */
+// Initializes post page with content and event listeners when DOM loads
 document.addEventListener('DOMContentLoaded', () => {
   const urlParams = new URLSearchParams(window.location.search);
   const postId = validatePostId(urlParams.get('postId'));
@@ -142,7 +151,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// Validation
+/** Validation Utilities */
+// Validates post ID format and encoding
 function validatePostId(postId) {
   if (!postId) return null;
   try {
@@ -153,6 +163,7 @@ function validatePostId(postId) {
   }
 }
 
+// Handles invalid post scenario with user notification and redirect 
 function handleInvalidPost() {
   console.error('Invalid post ID');
   document.getElementById("postTitle").textContent = "Post Not Found";

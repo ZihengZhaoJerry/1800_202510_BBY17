@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const logoutLink = document.getElementById('logoutLink');
     if (logoutLink) {
       logoutLink.addEventListener('click', (e) => {
-        e.preventDefault(); // Prevent default link behavior
+        e.preventDefault(); 
         logout();
       });
     }
@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function logout() {
     firebase.auth().signOut().then(() => {
       console.log("logging out user");
-      window.location.href = "/login.html"; // Change to your actual login page
+      window.location.href = "/login.html"; 
     }).catch((error) => {
       console.error("Logout error:", error);
     });

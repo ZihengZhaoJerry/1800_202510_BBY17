@@ -1,7 +1,9 @@
+// Initializes authentication state monitoring and user name retrieval
 function getNameFromAuth() {
   firebase.auth().onAuthStateChanged(handleAuthStateChange);
 }
 
+// Handles authentication state changes and updates UI with user name
 function handleAuthStateChange(user) {
   if (user) {
     console.log(user.uid, user.displayName);
@@ -11,11 +13,13 @@ function handleAuthStateChange(user) {
   }
 }
 
+// Updates DOM element with current user's display name
 function updateUserNameDisplay(userName) {
   const nameElement = document.getElementById("name-goes-here");
   if (nameElement) nameElement.innerText = userName;
 }
 
+// Retrieves all post documents from Firestore collection
 async function fetchPosts() {
   try {
     const snapshot = await db.collection("posts").get();
@@ -26,10 +30,12 @@ async function fetchPosts() {
   }
 }
 
+// Selects random subset of posts from array
 function selectRandomPosts(postsArray, count = 3) {
   return postsArray.sort(() => 0.5 - Math.random()).slice(0, count);
 }
 
+// Retrieves author name from Firestore using user ID with fallback handling
 async function getPostAuthor(userId) {
   try {
     const userDoc = await db.collection("users").doc(userId).get();
@@ -40,6 +46,7 @@ async function getPostAuthor(userId) {
   }
 }
 
+// Creates cloned card element from template populated with post data
 function createCardElement(cardTemplate, post, author, date) {
   const newCard = cardTemplate.content.cloneNode(true);
   newCard.querySelector('.card-title').innerText = post.data.title || "No Title";
@@ -52,12 +59,14 @@ function createCardElement(cardTemplate, post, author, date) {
   return newCard;
 }
 
+// Processes individual post to create complete card element with metadata
 async function processSinglePost(post, cardTemplate) {
   const postDate = post.data.timestamp?.toDate().toLocaleString() || "No Date";
   const author = await getPostAuthor(post.data.owner);
   return createCardElement(cardTemplate, post, author, postDate);
 }
 
+// Main display function that fetches, selects, and renders post cards
 async function displayPosts() {
   const cardTemplate = document.getElementById("postCardTemplate");
   const container = document.getElementById("posts-go-here");
@@ -78,11 +87,13 @@ async function displayPosts() {
   }
 }
 
+// Sets up search form event listener for submission handling
 function setupSearchForm() {
   const searchForm = document.getElementById('searchForm');
   searchForm?.addEventListener('submit', handleSearchSubmit);
 }
 
+// Handles search form submission with validation and search term encoding
 async function handleSearchSubmit(e) {
   e.preventDefault();
   const searchInput = document.getElementById('searchInput');

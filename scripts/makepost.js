@@ -1,4 +1,7 @@
-document.getElementById("postForm").addEventListener("submit", function (event) {
+document.getElementById("postForm").addEventListener("submit", handleFormSubmit);
+
+// Handles form submission event, performs validation, and initiates post creation process 
+function handleFormSubmit(event) {
   event.preventDefault();
 
   // Get elements
@@ -34,7 +37,12 @@ document.getElementById("postForm").addEventListener("submit", function (event) 
     return;
   }
 
-  // Submit to Firestore
+  // Call submission function
+  submitPost(title, description, user, titleInput, descInput, showAlert);
+}
+
+// Submits new post data to Firestore
+function submitPost(title, description, user, titleInput, descInput, showAlert) {
   db.collection("posts").add({
     title: title,
     content: description,
@@ -49,4 +57,4 @@ document.getElementById("postForm").addEventListener("submit", function (event) 
     console.error("Error adding post: ", error);
     showAlert("Error", `Error adding post: ${error.message}`, false);
   });
-});
+}

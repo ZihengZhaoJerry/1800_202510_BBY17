@@ -1,3 +1,4 @@
+// Configures Firestore connection settings
 function configureFirestore(db) {
   try {
     if (db && !db._configured) {
@@ -11,10 +12,12 @@ function configureFirestore(db) {
   }
 }
 
+// Displays loading spinner animation in specified container 
 function showLoadingSpinner(container) {
   container.innerHTML = "<div class='text-center'><div class='spinner-border'></div></div>";
 }
 
+// Checks authentication state and returns user or displays login message
 function handleAuthState(container) {
   const user = firebase.auth().currentUser;
   if (!user) {
@@ -24,6 +27,7 @@ function handleAuthState(container) {
   return user;
 }
 
+// Enriches comment data with post title and formatted timestamp
 async function fetchNotificationData(doc) {
   const comment = doc.data();
   const postDoc = await db.collection("posts").doc(comment.postId).get();
@@ -36,10 +40,12 @@ async function fetchNotificationData(doc) {
   };
 }
 
+// Registers cleanup listener to unsubscribe from real-time updates
 function setupUnsubscribeListener(unsubscribe) {
   window.addEventListener("beforeunload", () => unsubscribe());
 }
 
+// Generates HTML template for notification card with data attributes
 function createNotificationCard(notif) {
   return `
     <div class="card mb-3 notification-card" data-comment-id="${notif.id}" data-post-id="${notif.postId}">
@@ -64,16 +70,19 @@ function createNotificationCard(notif) {
   `;
 }
 
+// Converts array of notifications into joined HTML string
 function renderNotificationList(notifications) {
   return notifications.map(notif => createNotificationCard(notif)).join("");
 }
 
+// Attaches click handlers to all mark-read buttons in notifications 
 function attachMarkReadListeners() {
   document.querySelectorAll(".mark-read-btn").forEach(btn => {
     btn.addEventListener("click", handleMarkReadClick);
   });
 }
 
+// Handles mark-read button clicks with batch update and UI removal 
 async function handleMarkReadClick(e) {
   const card = e.target.closest(".notification-card");
   try {
@@ -85,6 +94,7 @@ async function handleMarkReadClick(e) {
   }
 }
 
+// Processes real-time comment snapshot and updates notification display
 async function handleCommentSnapshot(snapshot, container) {
   if (snapshot.empty) {
     container.innerHTML = "<p class='text-center'>No new notifications</p>";
@@ -96,6 +106,7 @@ async function handleCommentSnapshot(snapshot, container) {
   attachMarkReadListeners();
 }
 
+// Initializes real-time listener for unread comments matching post owner
 function setupCommentListener(user, container) {
   const query = db.collection("all_comments")
     .where("postOwner", "==", user.uid)
@@ -113,6 +124,7 @@ function setupCommentListener(user, container) {
   setupUnsubscribeListener(unsubscribe);
 }
 
+// Main notification display flow with auth check and error handling
 async function displayNotifications() {
   const container = document.getElementById("postsContainer");
   showLoadingSpinner(container);
@@ -128,6 +140,7 @@ async function displayNotifications() {
   }
 }
 
+// Prepares batch updates for both global and post-specific comment references
 function addCommentUpdatesToBatch(batch, doc) {
   batch.update(doc.ref, { read: true });
   const postCommentRef = db.collection("posts")
@@ -137,6 +150,7 @@ function addCommentUpdatesToBatch(batch, doc) {
   batch.update(postCommentRef, { read: true });
 }
 
+// Marks all unread notifications as read using batch update operation
 async function markAllRead() {
   const user = firebase.auth().currentUser;
   if (!user) return;
@@ -154,10 +168,12 @@ async function markAllRead() {
   displayNotifications();
 }
 
+// Initializes click handler for mark-all-read button
 function setupMarkAllReadButton() {
   document.getElementById("markAllReadBtn")?.addEventListener("click", markAllRead);
 }
 
+// Initializes notification system and auth state monitoring on page load
 document.addEventListener("DOMContentLoaded", () => {
   setupMarkAllReadButton();
   firebase.auth().onAuthStateChanged(user => {
@@ -165,6 +181,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+// Updates read status for specific comment across both collections
 async function markCommentRead(postId, commentId) {
   const batch = db.batch();
   const globalCommentRef = db.collection("all_comments").doc(commentId);
@@ -177,6 +194,7 @@ async function markCommentRead(postId, commentId) {
   await batch.commit();
 }
 
+// Displays error message with retry button in notification container
 function showError(message) {
   const container = document.getElementById("postsContainer");
   container.innerHTML = `

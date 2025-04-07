@@ -1,12 +1,13 @@
+// Initiates user logout process with Firebase authentication 
 function logout() {
     firebase.auth().signOut().then(() => {
-        // Sign-out successful.
         console.log("logging out user");
       }).catch((error) => {
-        // An error happened.
+        // error handling omitted
       });
 }
 
+// Initializes real-time notification badge updates based on unread comments
 function setupNotificationBadge() {
   const user = firebase.auth().currentUser;
   if (!user) return;
@@ -25,6 +26,7 @@ function setupNotificationBadge() {
   });
 }
 
+// Manages notification badge state based on authentication status
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
     const unsubscribe = setupNotificationBadge();
