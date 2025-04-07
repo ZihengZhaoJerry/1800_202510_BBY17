@@ -1,5 +1,4 @@
-
-# Project Name
+# Huh!
 
 ## Overview
 
@@ -22,8 +21,7 @@ Developed for the COMP 1800 course, this project applied agile project managemen
 
 ## Technologies Used
 
-Example:
-- **Frontend**: HTML, CSS, JavaScript
+- **Frontend**: HTML5, CSS, JavaScript, Bootstrap
 - **Backend**: Firebase for hosting
 - **Database**: Firestore
 
@@ -31,63 +29,63 @@ Example:
 
 ## Usage
 
-Example:
-1. Open your browser and visit `http://localhost:3000`.
-2. Enter the name of the city in the search bar and press enter.
-3. View the weather information displayed on the screen.
+1. Open the application in a web browser.
+2. Sign up or log in to your account.
+3. Use the search bar to find slang terms.
+4. Create new posts or comment on existing ones.
+5. Get notifications when users interact with your content.
 
 ---
 
 ## Project Structure
 
-Example:
 ```
-project-name/
-├── src/
-│   ├── index.html
-│   ├── style.css
-│   ├── app.js
-│   └── components/
-├── package.json
-├── README.md
-└── .gitignore
+1800_202510_BBY17/
+├── image/           # Image assets
+├── scripts/         # JavaScript files
+├── styles/          # CSS stylesheets
+├── text/            # Miscellaneous text content
+├── .gitignore
+├── index.html       # Main entry point
+└── README.md
 ```
 
 ---
 
 ## Contributors
-- **Your Name** - BCIT CST Student with a passion for creating user-friendly applications. Fun fact: Loves solving Rubik's Cubes in under a minute.
-- **Teammate Name** - BCIT CST Student, Frontend enthusiast with a knack for creative design. Fun fact: Has a collection of over 50 houseplants.
+
+- **Ziheng (Jerry) Zhao** - BCIT CST Student. Passionate about communication through design and language. Fun fact: Can solve a Rubik’s cube in under a minute.
+- **Cameron Morris** - Detail-oriented frontend developer. Fun fact: Owns a massive houseplant collection.
+- **Hari Chyrish Saravanan** - Always improving and refining user experience through thoughtful logic. Fun fact: Enjoys reading sentence structure guides for fun.
+- **Ario Yeganeh** - Focused on clarity and user-centric design. Fun fact: Loves learning new phrases in multiple languages.
 
 ---
 
 ## Acknowledgments
 
-Example:
-- Weather data sourced from [OpenWeatherMap](https://openweathermap.org/).
-- Code snippets for ___ algoirthm were adapted from resources such as [Stack Overflow](https://stackoverflow.com/) and [MDN Web Docs](https://developer.mozilla.org/).
-- Icons sourced from [FontAwesome](https://fontawesome.com/) and images from [Unsplash](https://unsplash.com/).
+- Guidance and feedback from Carly Orr, our COMP 1800 Instructor.
+- Design prototyping via [Figma](https://www.figma.com/)
+- Backend and authentication with [Firebase](https://firebase.google.com/)
+- Project coordination using [Slack](https://slack.com/), [Trello](https://trello.com/), and [GitHub](https://github.com/)
+- Responsive layout built with [Bootstrap](https://getbootstrap.com/)
 
 ---
 
 ## Limitations and Future Work
+
 ### Limitations
 
-Example:
-- Currently, the app only supports city-based weather searches.
-- Limited to basic weather parameters like temperature, humidity, and conditions.
-- The user interface can be further enhanced for accessibility.
+- Notification system is only compatible with Firebase v8.
+- Currently focused on Vancouver slang only.
+- Some accessibility features are still under development.
 
 ### Future Work
 
-Example: 
-- Add support for location-based weather detection using GPS.
-- Implement additional weather parameters like wind speed and UV index.
-- Create a dark mode for better usability in low-light conditions.
-- Integrate user accounts for saving favorite locations.
+- Expand to include slang from other regions.
+- Add dark mode for improved UX.
+- Integrate gamification (e.g., badges for contributions).
+- Include AI-based suggestions for related slang.
+- Support for multi-language translations.
 
 ---
-
-
-
 
