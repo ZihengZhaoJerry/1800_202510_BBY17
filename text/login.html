@@ -36,7 +36,8 @@
     <!-- Other libraries and styles of your own -->
     <!-------------------------------------------->
     <!-- <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> -->
-    <link rel="stylesheet" href="./styles/makepost.css">
+    <link rel="stylesheet" href="../styles/login.css">
+    
       
 
 </head>
@@ -49,52 +50,23 @@
     <!-- our own navbar goes here -->
     <nav id="navbarPlaceholder"></nav>
 
-    
-    <div class="container mt-5">
-      <h2>Make a Post</h2>
-      <form id="postForm">
-          <label for="title" class="form-label">Title:</label>
-          <input type="text" id="title" class="form-control" placeholder="Enter Your Title" required>
-
-          <br>
-
-          <label for="description" class="form-label">Enter Text:</label>
-          <input type="text" id="description" class="form-control large-input" placeholder="Description" required>
-
-          <br>
-
-          <button type="submit" class="btn btn-success">Submit Post</button>
-      </form>
+    <!-- the body of your page goes here -->
+    <div class="container">
+        <h1>Let's Sign up / Login!</h1>
     </div>
-    <!-- stuff -->
+    <div id="firebaseui-auth-container"></div>
+    <div id="loader">Loading...</div>
 
     <!-- our own footer goes here-->
-    <nav id="footerPlaceholder"></nav>
+    <!-- <nav id="footerPlaceholder"></nav> -->
 
-        <!-- Custom Alert Modal -->
-    <div class="modal fade" id="alertModal" tabindex="-1">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="alertTitle">Alert</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-          </div>
-          <div class="modal-body" id="alertMessage">
-            <!-- Message content goes here -->
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
-          </div>
-        </div>
-      </div>
-    </div>
     <!---------------------------------------------->
     <!-- Your own JavaScript functions go here    -->
     <!---------------------------------------------->
-    <script src="./scripts/firebaseAPI_TEAM99.js"></script>
-    <script src="./scripts/skeleton.js"></script>
-    <script src="./scripts/script.js"></script>
-    <script src="./scripts/makepost.js"></script>
+    <script src="../scripts/firebaseAPI_TEAM99.js"></script>
+    <script src="../scripts/skeleton.js"></script>
+    <script src="../scripts/authentication.js"></script>
+    <script src="../scripts/script.js"></script>
 
 </body>
 

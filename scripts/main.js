@@ -94,7 +94,7 @@ async function handleSearchSubmit(e) {
   }
 
   const searchTerm = encodeURIComponent(searchTermRaw.toLowerCase());
-  window.location.href = `public_postTEMPLATE.html?search=${searchTerm}`;
+  window.location.href = `public_post.html?search=${searchTerm}`;
 }
 
 // Initialize functions
